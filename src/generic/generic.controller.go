@@ -5,7 +5,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/birukbelay/gocmn/dtos"
+	"github.com/birukbelay/gocmn/src/dtos"
 )
 
 type IGenericController[T any, F any, D any, Q Queryable] struct {

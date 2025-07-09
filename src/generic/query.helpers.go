@@ -2,11 +2,12 @@ package generic
 
 import (
 	"fmt"
-	"github.com/birukbelay/gocmn/dtos"
 	"strings"
 	"time"
 
 	"gorm.io/gorm"
+
+	"github.com/birukbelay/gocmn/src/dtos"
 )
 
 func addStartEndDate(query *gorm.DB, startDate, endDate string) (*gorm.DB, error) {

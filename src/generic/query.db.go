@@ -3,16 +3,17 @@ package generic
 import (
 	"context"
 	"errors"
-	models "github.com/birukbelay/gocmn/base"
-	"github.com/birukbelay/gocmn/dtos"
-	cmn "github.com/birukbelay/gocmn/logger"
-	respC "github.com/birukbelay/gocmn/resp_codes"
-	"github.com/birukbelay/gocmn/util"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	models "github.com/birukbelay/gocmn/src/base"
+	"github.com/birukbelay/gocmn/src/dtos"
+	cmn "github.com/birukbelay/gocmn/src/logger"
+	respC "github.com/birukbelay/gocmn/src/resp_codes"
+	"github.com/birukbelay/gocmn/src/util"
 )
 
 // ==============================================   Fetch Many Operations ================

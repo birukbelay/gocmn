@@ -1,9 +1,10 @@
 package generic
 
 import (
-	"github.com/birukbelay/gocmn/dtos"
-	"github.com/birukbelay/gocmn/util"
 	"gorm.io/gorm"
+
+	"github.com/birukbelay/gocmn/src/dtos"
+	"github.com/birukbelay/gocmn/src/util"
 )
 
 func CreateCursor[T any](limit int, forward bool, dataList []T, orderedBy, pagiCursor string) (cursorObj dtos.CursorStruct, dataLst []T, eror error) {

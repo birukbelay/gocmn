@@ -3,11 +3,13 @@ package generic
 import (
 	"context"
 	"errors"
-	"github.com/birukbelay/gocmn/dtos"
-	respC "github.com/birukbelay/gocmn/resp_codes"
+
 	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/birukbelay/gocmn/src/dtos"
+	respC "github.com/birukbelay/gocmn/src/resp_codes"
 )
 
 func CreateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, createDto, model2UpdateDto any, association AssocVar) (dtos.GResp[T], error) {

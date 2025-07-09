@@ -1,9 +1,11 @@
 package dtos
 
 import (
-	cmn "github.com/birukbelay/gocmn/logger"
-	"github.com/danielgtaylor/huma/v2"
 	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
+
+	cmn "github.com/birukbelay/gocmn/src/logger"
 )
 
 //===========================   Paginated Responses

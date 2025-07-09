@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	cmn "github.com/birukbelay/gocmn/logger"
+	cmn "github.com/birukbelay/gocmn/src/logger"
 )
 
 type Resp[T any] struct {

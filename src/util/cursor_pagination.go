@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/birukbelay/gocmn/dtos"
-	cmn "github.com/birukbelay/gocmn/logger"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,6 +11,9 @@ import (
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	cmn "github.com/birukbelay/gocmn/src/logger"
+	"github.com/birukbelay/gocmn/src/dtos"
 )
 
 func GetFieldValue(obj interface{}, fieldName string) (fieldValue string, error error) {

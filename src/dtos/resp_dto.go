@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	response_const "github.com/birukbelay/gocmn/resp_codes"
+	response_const "github.com/birukbelay/gocmn/src/resp_codes"
 )
 
 type PResp[T any] struct {

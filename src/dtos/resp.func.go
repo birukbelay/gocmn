@@ -1,8 +1,9 @@
 package dtos
 
 import (
-	response_const "github.com/birukbelay/gocmn/resp_codes"
 	"net/http"
+
+	response_const "github.com/birukbelay/gocmn/src/resp_codes"
 )
 
 func ReturnOffsetPaginatedS[T any](item T, count int64, hasMore bool, rowsAffected int64) PResp[T] {
