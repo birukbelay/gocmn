@@ -41,21 +41,21 @@ func (uh *IGenericController[T, F, D, Q]) CursorPaginated(ctx context.Context, f
 
 func (uh *IGenericController[T, F, D, Q]) CreateOne(ctx context.Context, inputs *dtos.HumaReqBody[D]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbCreateOne[T](uh.GormConn, ctx, inputs.Body, &Opt{})
-	return dtos.GHuReturnS(resp, err)
+	return dtos.HumaReturnG(resp, err)
 }
 func (uh *IGenericController[T, F, D, Q]) GetOneDomainByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, &Opt{})
-	return dtos.GHuReturnS(resp, err)
+	return dtos.HumaReturnG(resp, err)
 }
 
 func (uh *IGenericController[T, F, D, Q]) UpdateOneById(ctx context.Context, filter *dtos.HumaReqBodyId[D]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbUpdateOneById[T](uh.GormConn, ctx, filter.ID, filter.Body, &Opt{})
-	return dtos.GHuReturnS(resp, err)
+	return dtos.HumaReturnG(resp, err)
 }
 
 func (uh *IGenericController[T, F, D, Q]) DeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbDeleteOneById[T](uh.GormConn, ctx, filter.ID, &Opt{})
-	return dtos.GHuReturnS[T](resp, err)
+	return dtos.HumaReturnG[T](resp, err)
 }
 
 //===================== Batch operations ===========

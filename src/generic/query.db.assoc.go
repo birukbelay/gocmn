@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 
 	"github.com/birukbelay/gocmn/src/dtos"
-	respC "github.com/birukbelay/gocmn/src/resp_codes"
+	respC "github.com/birukbelay/gocmn/src/resp_const"
 )
 
 func CreateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, createDto, model2UpdateDto any, association AssocVar) (dtos.GResp[T], error) {
@@ -20,12 +20,12 @@ func CreateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, cr
 		}
 	}()
 	if err := tx.Error; err != nil {
-		return dtos.InternalErrS[T](err.Error()), err
+		return dtos.InternalErrMS[T](err.Error()), err
 	}
 	targetModel := new(T)
 	if err := mapstructure.Decode(createDto, &targetModel); err != nil {
 		tx.Rollback()
-		return dtos.BadReqErrS[T](err.Error()), err
+		return dtos.BadReqM[T](err.Error()), err
 	}
 
 	query := tx.WithContext(ctx)
@@ -38,7 +38,7 @@ func CreateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, cr
 	resp := query.Clauses(clause.Returning{}).Create(&targetModel)
 	if resp.Error != nil {
 		tx.Rollback()
-		return dtos.InternalErrS[T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 
 	//TODO how to fix it if the user wants it to be empty
@@ -53,17 +53,17 @@ func CreateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, cr
 			query = "slug IN (?)"
 		} else {
 			tx.Rollback()
-			return dtos.BadReqErrS[T](respC.DataNotFound.Msg()), errors.New(respC.DataNotFound.Msg())
+			return dtos.BadReqM[T]("invalid association key"), errors.New(respC.DataNotFound.Msg())
 		}
 		var model2 A
 		if err := tx.Model(&model2).Where(query, association.AssociatedValues).Updates(model2UpdateDto).Error; err != nil {
 			tx.Rollback()
-			return dtos.BadReqErrS[T](respC.DataNotFound.Msg()), errors.New(respC.DataNotFound.Msg())
+			return dtos.BadReqM[T](respC.DataNotFound.Msg()), errors.New(respC.DataNotFound.Msg())
 		}
 	}
 	commit := tx.Commit()
 	if commit.Error != nil {
-		return dtos.InternalErrS[T](commit.Error.Error()), commit.Error
+		return dtos.InternalErrMS[T](commit.Error.Error()), commit.Error
 	}
 	return dtos.SuccessCS[T](*targetModel, respC.UpdateSuccess, resp.RowsAffected), nil
 }
@@ -74,11 +74,11 @@ func UpdateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, fi
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			response, err = dtos.InternalErrS[T]("Transaction failed"), errors.New("Transaction Failed")
+			response, err = dtos.InternalErrMS[T]("Transaction failed"), errors.New("Transaction Failed")
 		}
 	}()
 	if err := tx.Error; err != nil {
-		return dtos.InternalErrS[T](err.Error()), err
+		return dtos.InternalErrMS[T](err.Error()), err
 	}
 	//=============== Step2: define query for first model
 	result := new(T)
@@ -92,7 +92,7 @@ func UpdateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, fi
 	resp := query.Clauses(clause.Returning{}).Model(&result).Where(filter).Updates(updateDto)
 	if resp.Error != nil {
 		tx.Rollback()
-		return dtos.InternalErrS[T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
 		tx.Rollback()
@@ -112,7 +112,7 @@ func UpdateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, fi
 			secModQury = "slug IN (?)"
 		} else {
 			tx.Rollback()
-			return dtos.BadReqErrS[T](respC.DataNotFound.Msg()), errors.New(respC.DataNotFound.Msg())
+			return dtos.BadReqM[T](respC.DataNotFound.Msg()), errors.New(respC.DataNotFound.Msg())
 		}
 		//Query the associated model(eg: cards of users with `ID IN (cardIds)`)
 		var associatedModels []*A
@@ -123,13 +123,13 @@ func UpdateOneWithAssociations[T any, A any](u *gorm.DB, ctx context.Context, fi
 		err := tx.Debug().Model(&result).Association(association.ModelName).Replace(associatedModels)
 		if err != nil {
 			tx.Rollback()
-			return dtos.InternalErrS[T](respC.UpdatingAssociationsFailed.Msg()), errors.New(respC.UpdatingAssociationsFailed.Msg())
+			return dtos.InternalErrMS[T](respC.UpdatingAssociationsFailed.Msg()), errors.New(respC.UpdatingAssociationsFailed.Msg())
 		}
 
 	}
 	commit := tx.Commit()
 	if commit.Error != nil {
-		return dtos.InternalErrS[T](commit.Error.Error()), commit.Error
+		return dtos.InternalErrMS[T](commit.Error.Error()), commit.Error
 	}
 	return dtos.SuccessCS[T](*result, respC.UpdateSuccess, resp.RowsAffected), nil
 }

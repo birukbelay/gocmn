@@ -33,4 +33,3 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 )
-

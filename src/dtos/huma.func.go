@@ -8,7 +8,7 @@ import (
 	cmn "github.com/birukbelay/gocmn/src/logger"
 )
 
-//===========================   Paginated Responses
+//===========================   Paginated Responses  ================
 
 // PHumaReturn returns a paginated huma response
 func PHumaReturn[T any](resp PResp[T], err error) (*HumaResponse[PResp[T]], error) {
@@ -39,10 +39,10 @@ func PHumaErr[T any](err string, status int) (*HumaResponse[PResp[T]], error) {
 //================  Non Paginated responses ========
 // =================================================
 
-//=============  Responses with the Item
+//=============  Responses with the `Item, status & err param`
 
-// GHumaResp creates a HumaResponse object with a GResp body containing the provided item and status.
-func GHumaResp[T any](item T, status int, err error) (*HumaResponse[GResp[T]], error) {
+// HumaReturnTS takes `the Item, status & error`
+func HumaReturnTS[T any](item T, status int, err error) (*HumaResponse[GResp[T]], error) {
 
 	if err != nil {
 		return &HumaResponse[GResp[T]]{
@@ -61,12 +61,12 @@ func GHumaResp[T any](item T, status int, err error) (*HumaResponse[GResp[T]], e
 	}, nil
 }
 
-//========================  Response With Gresp ============
+//========================  Response With `Gresp param` ============
 
-// GHuReturnS accepts struct
-func GHuReturnS[T any](resp GResp[T], err error) (*HumaResponse[GResp[T]], error) {
+// HumaReturnG accepts Gresp, err
+func HumaReturnG[T any](resp GResp[T], err error) (*HumaResponse[GResp[T]], error) {
 	if err != nil {
-		cmn.LogTrace("error happned", err.Error())
+		cmn.LogTraceN("error happned", err.Error(), 3)
 
 		return &HumaResponse[GResp[T]]{
 			Status: resp.Status,
@@ -79,40 +79,24 @@ func GHuReturnS[T any](resp GResp[T], err error) (*HumaResponse[GResp[T]], error
 	}, err
 }
 
-// GHumaReturn accepts pointer, and return huma with GResp: TO DEPRICATE
-func GHumaReturn[T any](resp *GResp[T], err error) (*HumaResponse[GResp[T]], error) {
+func HumaReturnGWithCookie[T any](resp GResp[T], err error, cookie []http.Cookie) (*HumaResponse[GResp[T]], error) {
 	if err != nil {
 		cmn.LogTraceN("error happned", err.Error(), 3)
 
 		return &HumaResponse[GResp[T]]{
 			Status: resp.Status,
-			Body:   *resp,
+			Body:   resp,
 		}, huma.NewError(resp.Status, err.Error())
 	}
 	return &HumaResponse[GResp[T]]{
-		Status: resp.Status,
-		Body:   *resp,
+		Status:    resp.Status,
+		Body:      resp,
+		SetCookie: cookie,
 	}, err
 }
 
-func ReturnWithCookie[T any](resp GResp[T], err error, cookie http.Cookie) (*HumaResponse[GResp[T]], error) {
-	if err != nil {
-		cmn.LogTrace("error happned", err.Error())
-
-		return &HumaResponse[GResp[T]]{
-			Status:    resp.Status,
-			Body:      resp,
-			SetCookie: cookie,
-		}, huma.NewError(resp.Status, err.Error())
-	}
-	return &HumaResponse[GResp[T]]{
-		Status: resp.Status,
-		Body:   resp,
-	}, err
-}
-
-// HumaGError return huma error form the status & error message
-func HumaGError[T any](status int, errMsg string) (*HumaResponse[GResp[T]], error) {
+// HumaReturnSE return huma error form the status & error message
+func HumaReturnSE[T any](status int, errMsg string) (*HumaResponse[GResp[T]], error) {
 	return &HumaResponse[GResp[T]]{
 		Status: status,
 		Body: GResp[T]{
@@ -122,7 +106,9 @@ func HumaGError[T any](status int, errMsg string) (*HumaResponse[GResp[T]], erro
 	}, huma.NewError(status, errMsg)
 }
 
-// ========    unused   ============
+// =====================    unused   ==========================
+// ============================================================
+
 func ReturnGErrorB[T any](status int, errMsg string) *HumaResponse[GResp[T]] {
 	return &HumaResponse[GResp[T]]{
 		Status: status,
@@ -138,4 +124,22 @@ func ReturnBody[T any](item T, status int) *HumaResponse[T] {
 		Status: status,
 		Body:   item,
 	}
+}
+
+//=====================  TO depricate
+
+// GHumaReturn accepts pointer, and return huma with GResp: TO DEPRICATE
+func GHumaReturn[T any](resp *GResp[T], err error) (*HumaResponse[GResp[T]], error) {
+	if err != nil {
+		cmn.LogTraceN("error happned", err.Error(), 3)
+
+		return &HumaResponse[GResp[T]]{
+			Status: resp.Status,
+			Body:   *resp,
+		}, huma.NewError(resp.Status, err.Error())
+	}
+	return &HumaResponse[GResp[T]]{
+		Status: resp.Status,
+		Body:   *resp,
+	}, err
 }

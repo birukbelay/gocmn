@@ -1,7 +1,7 @@
 package dtos
 
 import (
-	response_const "github.com/birukbelay/gocmn/src/resp_codes"
+	"github.com/birukbelay/gocmn/src/resp_const"
 )
 
 type PResp[T any] struct {
@@ -12,9 +12,9 @@ type PResp[T any] struct {
 	HasPrev      bool  `json:"has_prev"`
 
 	//messages
-	Code    response_const.RespCode `json:"code,omitempty"`
-	Message string                  `json:"message,omitempty"`
-	Error   string                  `json:"error,omitempty"`
+	Code    resp_const.RespCode `json:"code,omitempty"`
+	Message string              `json:"message,omitempty"`
+	Error   string              `json:"error,omitempty"`
 	//Cursors
 	NextCursor string `json:"next_cursor,omitempty"`
 	PrevCursor string `json:"prev_cursor,omitempty"`
@@ -26,14 +26,14 @@ type GResp[T any] struct {
 	HasMore bool  `json:"has_more"`
 	HasPrev bool  `json:"has_prev"`
 
-	Code         response_const.RespCode `json:"code,omitempty"`
-	Message      string                  `json:"message,omitempty"`
-	Error        string                  `json:"error,omitempty"`
-	RowsAffected int64                   `json:"rows_affected"`
-	NextCursor   string                  `json:"next_cursor,omitempty"`
-	PrevCursor   string                  `json:"prev_cursor,omitempty"`
-	Body         T                       `json:"body"`
-	Ok           bool                    `json:"ok,omitempty"`
+	Code         resp_const.RespCode `json:"code,omitempty"`
+	Message      string              `json:"message,omitempty"`
+	Error        string              `json:"error,omitempty"`
+	RowsAffected int64               `json:"rows_affected"`
+	NextCursor   string              `json:"next_cursor,omitempty"`
+	PrevCursor   string              `json:"prev_cursor,omitempty"`
+	Body         T                   `json:"body"`
+	Ok           bool                `json:"ok,omitempty"`
 }
 type CursorStruct struct {
 	NextCursor string `json:"next_cursor"`
@@ -61,9 +61,9 @@ type PaginationInput struct {
 }
 
 type LocResp[T any] struct {
-	Status  int                     `json:"status"`
-	Code    response_const.RespCode `json:"code"`
-	Message string                  `json:"message"`
+	Status  int                 `json:"status"`
+	Code    resp_const.RespCode `json:"code"`
+	Message string              `json:"message"`
 	Ok      bool
 	Val     T
 }

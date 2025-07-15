@@ -8,7 +8,7 @@ import (
 type HumaResponse[T any] struct {
 	Body      T `json:"body" doc:"response Body"`
 	Status    int
-	SetCookie http.Cookie `header:"Set-Cookie"`
+	SetCookie []http.Cookie `header:"Set-Cookie"`
 }
 
 // HumaReqBody is

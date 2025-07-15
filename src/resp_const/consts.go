@@ -59,16 +59,21 @@ const (
 // Auth Status Codes
 const (
 	EmailOrPassword     = RespCode("EMAIL_OR_PASSWORD_WRONG")
+	PasswordDontMatch   = RespCode("PASSWORD_DONT_MATCH")
 	InfoOrCode          = RespCode("INFO_OR_CODE_WRONG")
+	CodeExpired         = RespCode("CODE_EXPIRED")
 	InvalidEmailOrPhone = RespCode("INVALID_EMAIL_OR_PHONE")
 	PhoneExists         = RespCode("PHONE_EXISTS")
 	EmailExists         = RespCode("EMAIL_EXISTS")
 	Password            = RespCode("PASSWORD_NOT_STORED")
 	CouldNotAssignRole  = RespCode("ROLE_NOT_ASSIGNED")
 	TokenDontMatch      = RespCode("TOKEN_DONT_MATCH")
-	InvalidToken        = RespCode("INVALID_TOKEN")
-	UserNotFound        = RespCode("USER_NOT_FOUND")
-	UserExists          = RespCode("USER_EXISTS")
+
+	// User Related Errors
+	InvalidToken  = RespCode("INVALID_TOKEN")
+	UserNotActive = RespCode("USER_NOT_ACTIVE")
+	UserNotFound  = RespCode("USER_NOT_FOUND")
+	UserExists    = RespCode("USER_EXISTS")
 )
 
 // File related api responses

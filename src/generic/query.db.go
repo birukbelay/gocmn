@@ -12,7 +12,7 @@ import (
 	models "github.com/birukbelay/gocmn/src/base"
 	"github.com/birukbelay/gocmn/src/dtos"
 	cmn "github.com/birukbelay/gocmn/src/logger"
-	respC "github.com/birukbelay/gocmn/src/resp_codes"
+	respC "github.com/birukbelay/gocmn/src/resp_const"
 	"github.com/birukbelay/gocmn/src/util"
 )
 
@@ -103,7 +103,7 @@ func DbFetchManyWithCursor[T any](u *gorm.DB, ctx context.Context, filter any, p
 
 func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
-		return dtos.BadRequestMsgS[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
+		return dtos.BadReqM[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
 	}
 	result := new(T)
 	query := u.WithContext(ctx)
@@ -116,7 +116,7 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 			return dtos.NotFoundErrS[T](resp.Error.Error()), resp.Error
 		}
 		//cmn.LogTrace("the error is", resp)
-		return dtos.InternalErrS[T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
@@ -128,7 +128,7 @@ func DbGetOneByID[T any](u *gorm.DB, ctx context.Context, id string, options *Op
 func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[T], error) {
 	result := new(T)
 	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.BadRequestMsgS[T](err.Error()), err
+		return dtos.BadReqM[T](err.Error()), err
 	}
 	query := u.WithContext(ctx)
 	if options != nil {
@@ -141,7 +141,32 @@ func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt
 	}
 	resp := query.Model(&result).Create(&result)
 	if resp.Error != nil {
-		return dtos.InternalErrS[T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
+}
+
+func DbUpsertOne[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx)
+	if options != nil {
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Clauses(clause.OnConflict{
+		Columns:   cols,
+		UpdateAll: true,
+		// DoUpdates: clause.AssignmentColumns(updateCols),
+	}).Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
@@ -164,7 +189,7 @@ func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (
 
 func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
-		return dtos.BadRequestMsgS[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
+		return dtos.BadReqM[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
 	}
 	result := new(T)
 	query := u.WithContext(ctx)
@@ -178,7 +203,7 @@ func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto 
 	}
 	resp := query.Clauses(clause.Returning{}).Model(&result).Where(filter).Updates(updateDto)
 	if resp.Error != nil {
-		return dtos.InternalErrS[T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
 		return dtos.NotFoundErrS[T](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
@@ -193,7 +218,7 @@ func DbUpdateOneById[T any](u *gorm.DB, ctx context.Context, id string, updateDt
 
 func DbDeleteByFilter[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
-		return dtos.BadRequestMsgS[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
+		return dtos.BadReqM[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
 	}
 	result := new(T)
 	query := u.WithContext(ctx)
@@ -231,7 +256,7 @@ func DbDeleteOneById[T any](u *gorm.DB, ctx context.Context, id string, options 
 func DbCreateMany[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[[]T], error) {
 	var result []T
 	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.InternalErrS[[]T](err.Error()), err
+		return dtos.InternalErrMS[[]T](err.Error()), err
 	}
 	query := u.WithContext(ctx)
 	if options != nil {
@@ -244,14 +269,14 @@ func DbCreateMany[T any](u *gorm.DB, ctx context.Context, value any, options *Op
 	}
 	resp := query.Clauses(clause.OnConflict{DoNothing: true}, clause.Returning{}).Model(&result).Create(&result)
 	if resp.Error != nil {
-		return dtos.InternalErrS[[]T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[[]T](resp.Error.Error()), resp.Error
 	}
 	return dtos.SuccessS[[]T](result, resp.RowsAffected), nil
 }
 
 func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any, options *Opt) (dtos.GResp[int64], error) {
 	if isEmptyStruct(filter) {
-		return dtos.BadRequestMsgS[int64](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
+		return dtos.BadReqM[int64](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
 	}
 	result := new(T)
 	query := u.WithContext(ctx)
@@ -265,7 +290,7 @@ func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any,
 	}
 	resp := query.Clauses(clause.Returning{}).Model(&result).Where(filter).Updates(updateDto)
 	if resp.Error != nil {
-		return dtos.InternalErrS[int64](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[int64](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
 		return dtos.NotFoundErrS[int64](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
@@ -275,7 +300,7 @@ func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any,
 
 func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[int64], error) {
 	if isEmptyStruct(filter) {
-		return dtos.BadRequestMsgS[int64](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
+		return dtos.BadReqM[int64](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
 	}
 	result := new(T)
 	query := u.WithContext(ctx)
@@ -294,7 +319,7 @@ func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *O
 			return dtos.NotFoundErrS[int64](resp.Error.Error()), resp.Error
 		}
 		//cmn.LogTrace("the error is", resp)
-		return dtos.InternalErrS[int64](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[int64](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
 		return dtos.NotFoundErrS[int64]("NO records were deleted"), errors.New("NO records were deleted")
@@ -308,7 +333,7 @@ func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *O
 func DbUpsertManyWithValues[T any](u *gorm.DB, ctx context.Context, value any, options Opt) (dtos.GResp[[]T], error) {
 	var result []T
 	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.InternalErrS[[]T](err.Error()), err
+		return dtos.InternalErrMS[[]T](err.Error()), err
 	}
 
 	query := u.WithContext(ctx)
@@ -323,7 +348,7 @@ func DbUpsertManyWithValues[T any](u *gorm.DB, ctx context.Context, value any, o
 		DoUpdates: clause.AssignmentColumns(options.UpdateColumns),
 	}, clause.Returning{}).Model(&result).Create(&result)
 	if resp.Error != nil {
-		return dtos.InternalErrS[[]T](resp.Error.Error()), resp.Error
+		return dtos.InternalErrMS[[]T](resp.Error.Error()), resp.Error
 	}
 	return dtos.SuccessS[[]T](result, resp.RowsAffected), nil
 }

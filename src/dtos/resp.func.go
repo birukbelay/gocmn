@@ -3,14 +3,14 @@ package dtos
 import (
 	"net/http"
 
-	response_const "github.com/birukbelay/gocmn/src/resp_codes"
+	"github.com/birukbelay/gocmn/src/resp_const"
 )
 
 func ReturnOffsetPaginatedS[T any](item T, count int64, hasMore bool, rowsAffected int64) PResp[T] {
 	return PResp[T]{
 		Status:       http.StatusOK,
-		Code:         response_const.Success,
-		Message:      response_const.Success.ToStr(),
+		Code:         resp_const.Success,
+		Message:      resp_const.Success.ToStr(),
 		Body:         item,
 		Count:        count,
 		HasMore:      hasMore,
@@ -20,8 +20,8 @@ func ReturnOffsetPaginatedS[T any](item T, count int64, hasMore bool, rowsAffect
 func ReturnCursorPaginatedS[T any](item T, cursor CursorStruct, count int64, rowsAffected int64) PResp[T] {
 	return PResp[T]{
 		Status:       http.StatusOK,
-		Code:         response_const.Success,
-		Message:      response_const.Success.ToStr(),
+		Code:         resp_const.Success,
+		Message:      resp_const.Success.ToStr(),
 		Body:         item,
 		Count:        count,
 		NextCursor:   cursor.NextCursor,
@@ -36,65 +36,36 @@ func ReturnCursorPaginatedS[T any](item T, cursor CursorStruct, count int64, row
 func PInternalErrS[T any](message string) PResp[T] {
 	return PResp[T]{
 		Status: http.StatusInternalServerError,
-		Code:   response_const.FAIL,
+		Code:   resp_const.FAIL,
 		Error:  message,
 		//Body:         item,
 	}
 }
 
 // ====================================   Non Paginated messages =======================
-func FetchSuccessAS[T any](item T, message string, rowsAffected int64) GResp[T] {
+// RespStatusMsg is GENERIC user supply msg and Status code
+func RespStatusMsg[T any](message string, status int) *GResp[T] {
+	return &GResp[T]{
+		Status: status,
+		Error:  message,
+	}
+}
+
+//====================================   Success Messages =======================
+
+// SuccessS `PARAM: item, rowsaffected`   , mostly we dont need code for sucess `P!`
+func SuccessS[T any](item T, rowsAffected int64) GResp[T] {
 	return GResp[T]{
-		Status:       http.StatusOK,
-		Code:         response_const.Success,
-		Message:      message,
+		Status:       http.StatusCreated,
+		Code:         resp_const.Success,
+		Message:      "success",
 		Body:         item,
 		RowsAffected: rowsAffected,
 	}
 }
 
-func NotFoundErrS[T any](message string) GResp[T] {
-	return GResp[T]{
-		Status: http.StatusNotFound,
-		Code:   response_const.FAIL,
-		Error:  message,
-	}
-}
-
-// ===============  Bad Request ======
-func BadReqErrS[T any](message string) GResp[T] {
-	return GResp[T]{
-		Status: http.StatusBadRequest,
-		Code:   response_const.FAIL,
-		Error:  message,
-		Ok:     false,
-	}
-}
-func BadRequestMsgS[T any](errorMessage string) GResp[T] {
-	return GResp[T]{
-		Status: http.StatusBadRequest,
-		Code:   response_const.BadRequest,
-		Error:  errorMessage,
-		Ok:     false,
-	}
-}
-
-func FetchSuccessWithCountS[T any](item T, message string, rowsAffected, count int64) GResp[T] {
-	return GResp[T]{
-		Status:       http.StatusOK,
-		Code:         response_const.Success,
-		Message:      message,
-		Body:         item,
-		RowsAffected: rowsAffected,
-		Count:        count,
-	}
-
-}
-
-//====================================   Non Paginated messages =======================
-
-// SuccessCS used for  getOne, create, update & delete success
-func SuccessCS[T any](item T, code response_const.RespCode, rowsAffected int64) GResp[T] {
+// SuccessCS used for  getOne, create, update & delete success, `Param: item,code, rowsaffected`
+func SuccessCS[T any](item T, code resp_const.RespCode, rowsAffected int64) GResp[T] {
 	return GResp[T]{
 		Status:       http.StatusOK,
 		Code:         code,
@@ -103,21 +74,74 @@ func SuccessCS[T any](item T, code response_const.RespCode, rowsAffected int64) 
 		RowsAffected: rowsAffected,
 	}
 }
-func SuccessS[T any](item T, rowsAffected int64) GResp[T] {
+
+// FetchSuccessWithCountS
+func FetchSuccessWithCountS[T any](item T, message string, rowsAffected, count int64) GResp[T] {
 	return GResp[T]{
-		Status:       http.StatusCreated,
-		Code:         response_const.Success,
-		Message:      "success",
+		Status:       http.StatusOK,
+		Code:         resp_const.Success,
+		Message:      message,
 		Body:         item,
 		RowsAffected: rowsAffected,
+		Count:        count,
+	}
+
+}
+
+//====================================   ERROR Messages =======================
+
+func NotFoundErrS[T any](message string) GResp[T] {
+	return GResp[T]{
+		Status: http.StatusNotFound,
+		Code:   resp_const.FAIL,
+		Error:  message,
 	}
 }
 
-func InternalErrS[T any](message string) GResp[T] {
+// ===============  Bad Request ======
+
+func BadReqM[T any](errorMessage string) GResp[T] {
+	return GResp[T]{
+		Status: http.StatusBadRequest,
+		Code:   resp_const.BadRequest,
+		Error:  errorMessage,
+		Ok:     false,
+	}
+}
+func BadReqC[T any](code resp_const.RespCode) GResp[T] {
+	return GResp[T]{
+		Status:  http.StatusBadRequest,
+		Code:    code,
+		Error:   code.Msg(),
+		Message: code.Msg(),
+	}
+}
+
+// BadReqRespMsgCode accept message & response code,
+func BadReqRespMsgCode[T any](message string, code resp_const.RespCode) GResp[T] {
+	return GResp[T]{
+		Status: http.StatusBadRequest,
+		Code:   code,
+		Error:  message,
+	}
+}
+
+//=================  other errors
+
+//InternalErrMS : m shows accepts Message
+func InternalErrMS[T any](message string) GResp[T] {
 	return GResp[T]{
 		Status: http.StatusInternalServerError,
-		Code:   response_const.FAIL,
+		Code:   resp_const.FAIL,
 		Error:  message,
 		//Item:         item,
+	}
+}
+
+func NotModifiedErrM[T any](message string) *GResp[T] {
+	return &GResp[T]{
+		Status: http.StatusExpectationFailed,
+		Code:   resp_const.NotModified,
+		Error:  message,
 	}
 }
