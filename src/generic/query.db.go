@@ -146,7 +146,7 @@ func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
 
-func DbUpsertOne[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
+func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, options *Opt) (dtos.GResp[T], error) {
 	result := new(T)
 	if err := mapstructure.Decode(value, &result); err != nil {
 		return dtos.BadReqM[T](err.Error()), err
@@ -163,7 +163,30 @@ func DbUpsertOne[T any](u *gorm.DB, ctx context.Context, value any, cols []claus
 	resp := query.Clauses(clause.OnConflict{
 		Columns:   cols,
 		UpdateAll: true,
-		// DoUpdates: clause.AssignmentColumns(updateCols),
+	}).Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
+}
+
+func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx)
+	if options != nil {
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Clauses(clause.OnConflict{
+		Columns:   cols,
+		DoUpdates: clause.AssignmentColumns(updateCols),
 	}).Model(&result).Create(&result)
 	if resp.Error != nil {
 		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
