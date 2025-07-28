@@ -1,8 +1,9 @@
 package generic
 
 import (
-	"gorm.io/gorm/clause"
 	"reflect"
+
+	"gorm.io/gorm/clause"
 )
 
 type KeyArr map[string][]string
@@ -14,6 +15,8 @@ type Opt struct {
 	InQueries     KeyArr
 	UpdateColumns []string
 	Columns       []clause.Column
+	AuthKey       *string
+	AuthVal       *string
 }
 
 type AssociationKey string

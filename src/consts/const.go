@@ -18,3 +18,14 @@ type OperationId string
 func (o OperationId) Str() string {
 	return string(o)
 }
+
+
+
+const (
+	PanicFile        = "panic.log"
+	ImageErrFileName = "ImageError.json"
+	ImageUploadPath  = "public/assets/images"
+	FileUploadPath   = "public/assets"
+
+	FileServingUrl = "http://localhost:8001/assets/"
+)

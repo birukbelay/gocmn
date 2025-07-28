@@ -109,6 +109,7 @@ func HumaReturnSE[T any](status int, errMsg string) (*HumaResponse[GResp[T]], er
 // =====================    unused   ==========================
 // ============================================================
 
+// ReturnGErrorB, NO ERROR
 func ReturnGErrorB[T any](status int, errMsg string) *HumaResponse[GResp[T]] {
 	return &HumaResponse[GResp[T]]{
 		Status: status,

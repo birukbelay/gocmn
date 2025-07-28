@@ -13,7 +13,6 @@ func BcryptCreateHash(password string) (string, error) {
 	// Hash password with Bcrypt's min cost
 	hashedPasswordBytes, err := bcrypt.
 		GenerateFromPassword(passwordBytes, bcrypt.MinCost)
-
 	return string(hashedPasswordBytes), err
 }
 

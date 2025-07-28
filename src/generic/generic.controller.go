@@ -8,13 +8,19 @@ import (
 	"github.com/birukbelay/gocmn/src/dtos"
 )
 
-type IGenericController[T any, F any, D any, Q Queryable] struct {
+type IGenericController[T, C, U, F any, Q Queryable] struct {
 	GormConn *gorm.DB
 	//Conf     *conf.EnvConfig
-	//Service  IGenericGormServT[T, F, D]
+	//Service  IGenericGormServT[T, C, U, F]
 }
-
-func (uh *IGenericController[T, F, D, Q]) OffsetPaginated(ctx context.Context, filter *struct {
+type Input[T any, S any] struct {
+    Filter T
+    Query S
+}
+func NewGenericController[T, C, U, F any, Q Queryable](db *gorm.DB) *IGenericController[T, C, U, F, Q] {
+	return &IGenericController[T, C, U, F, Q]{GormConn: db}
+}
+func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, filter *struct {
 	Filter F
 	Query  Q
 	dtos.PaginationInput
@@ -25,7 +31,7 @@ func (uh *IGenericController[T, F, D, Q]) OffsetPaginated(ctx context.Context, f
 	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter.Filter, filter.PaginationInput, &Opt{})
 	return dtos.PHumaReturn(resp, err)
 }
-func (uh *IGenericController[T, F, D, Q]) CursorPaginated(ctx context.Context, filter *struct {
+func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, filter *struct {
 	Filter F
 	Query  Q
 	dtos.PaginationInput
@@ -39,23 +45,49 @@ func (uh *IGenericController[T, F, D, Q]) CursorPaginated(ctx context.Context, f
 
 //=======================  Single Operations
 
-func (uh *IGenericController[T, F, D, Q]) CreateOne(ctx context.Context, inputs *dtos.HumaReqBody[D]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func (uh *IGenericController[T, C, U, F, Q]) CreateOne(ctx context.Context, inputs *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbCreateOne[T](uh.GormConn, ctx, inputs.Body, &Opt{})
 	return dtos.HumaReturnG(resp, err)
 }
-func (uh *IGenericController[T, F, D, Q]) GetOneDomainByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func (uh *IGenericController[T, C, U, F, Q]) GetOneByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, &Opt{})
 	return dtos.HumaReturnG(resp, err)
 }
-
-func (uh *IGenericController[T, F, D, Q]) UpdateOneById(ctx context.Context, filter *dtos.HumaReqBodyId[D]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
-	resp, err := DbUpdateOneById[T](uh.GormConn, ctx, filter.ID, filter.Body, &Opt{})
+func (uh *IGenericController[T, C, U, F, Q]) GetOneById(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	resp, err := DbGetOneByID[T](uh.GormConn, ctx, filter.ID, &Opt{})
 	return dtos.HumaReturnG(resp, err)
 }
 
-func (uh *IGenericController[T, F, D, Q]) DeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
-	resp, err := DbDeleteOneById[T](uh.GormConn, ctx, filter.ID, &Opt{})
-	return dtos.HumaReturnG[T](resp, err)
+func (uh *IGenericController[T, C, U, F, Q]) UpdateOneById(ctx context.Context, dto *dtos.HumaReqBodyId[U]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	resp, err := DbUpdateOneById[T](uh.GormConn, ctx, dto.ID, dto.Body, &Opt{})
+	return dtos.HumaReturnG(resp, err)
 }
 
-//===================== Batch operations ===========
+func (uh *IGenericController[T, C, U, F, Q]) DeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	resp, err := DbDeleteOneById[T](uh.GormConn, ctx, filter.ID, &Opt{})
+	return dtos.HumaReturnG(resp, err)
+}
+
+func (uh *IGenericController[T, C, U, F, Q]) CountRecords(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
+	resp, err := DbCount[T](uh.GormConn, ctx, filter, &Opt{})
+	return dtos.HumaReturnG(resp, err)
+}
+
+// ===================== Batch operations ===========
+func (uh *IGenericController[T, C, U, F, Q]) CreateMany(ctx context.Context, inputs *dtos.HumaReqBody[[]C]) (*dtos.HumaResponse[dtos.GResp[[]T]], error) {
+	resp, err := DbCreateMany[T](uh.GormConn, ctx, inputs.Body, &Opt{})
+	return dtos.HumaReturnG(resp, err)
+}
+
+func (uh *IGenericController[T, C, U, F, Q]) DeleteMany(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
+	resp, err := DbDeleteMany[T](uh.GormConn, ctx, filter, &Opt{})
+	return dtos.HumaReturnG(resp, err)
+}
+
+// func (uh *IGenericController[T, C, U, F, Q]) UpdateMany(ctx context.Context, inputs *struct {
+// 	Q    F
+// 	Body U
+// }) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
+// 	resp, err := DbUpdateMany[T](uh.GormConn, ctx, inputs.Q, inputs.Body, &Opt{})
+// 	return dtos.HumaReturnG(resp, err)
+// }

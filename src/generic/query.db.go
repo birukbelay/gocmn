@@ -194,7 +194,7 @@ func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, 
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
 
-func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (int64, error) {
+func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[int64], error) {
 	var mdl T
 	var count int64
 	cntQuery := u.WithContext(ctx)
@@ -205,9 +205,9 @@ func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (
 	}
 	cnt := cntQuery.Model(mdl).Where(filter).Count(&count)
 	if cnt.Error != nil {
-		return 0, cnt.Error
+		return dtos.InternalErrMS[int64](cnt.Error.Error()), cnt.Error
 	}
-	return count, nil
+	return dtos.SuccessS(count, cnt.RowsAffected), nil
 }
 
 func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto any, options *Opt) (dtos.GResp[T], error) {
