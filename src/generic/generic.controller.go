@@ -9,17 +9,22 @@ import (
 )
 
 type IGenericController[T, C, U, F any, Q Queryable] struct {
-	GormConn *gorm.DB
+	GormConn      *gorm.DB
+	AuthKey       string
+	AuthValGetter string
 	//Conf     *conf.EnvConfig
 	//Service  IGenericGormServT[T, C, U, F]
 }
 type Input[T any, S any] struct {
-    Filter T
-    Query S
+	Filter T
+	Query  S
 }
+
 func NewGenericController[T, C, U, F any, Q Queryable](db *gorm.DB) *IGenericController[T, C, U, F, Q] {
 	return &IGenericController[T, C, U, F, Q]{GormConn: db}
 }
+
+
 func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, filter *struct {
 	Filter F
 	Query  Q

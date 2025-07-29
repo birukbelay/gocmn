@@ -3,6 +3,7 @@ package generic
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/zerolog/log"
@@ -26,6 +27,15 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	query := u.WithContext(ctx)
 	//select, preload and debug
 	query = DebugPreloadSelect(query, options, pagi.Select)
+
+	//================.  Authorization Queries. ==========
+	if options != nil {
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+	}
+
 	//tags
 	_ = searchTags(query, pagi.Tags)
 	//start & end date
@@ -63,6 +73,13 @@ func DbFetchManyWithCursor[T any](u *gorm.DB, ctx context.Context, filter any, p
 
 	var dataList []T
 	query := u.WithContext(ctx).Where(filter)
+	//================.  Authorization Queries. ==========
+	if options != nil {
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+	}
 
 	//select, preload and debug
 	query = DebugPreloadSelect(query, options, pagi.Select)
@@ -108,6 +125,12 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 	result := new(T)
 	query := u.WithContext(ctx)
 	query = DebugPreloadSelect(query, options, nil)
+	if options != nil {
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+	}
 
 	query = query.Model(result).Where(filter)
 	resp := query.First(result)
@@ -132,6 +155,7 @@ func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt
 	}
 	query := u.WithContext(ctx)
 	if options != nil {
+
 		if options.Debug {
 			query = query.Debug()
 		}
@@ -153,6 +177,11 @@ func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, col
 	}
 	query := u.WithContext(ctx)
 	if options != nil {
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
 		if options.Debug {
 			query = query.Debug()
 		}
@@ -183,6 +212,12 @@ func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, 
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	resp := query.Clauses(clause.OnConflict{
 		Columns:   cols,
@@ -202,12 +237,46 @@ func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (
 		if options.Debug {
 			cntQuery = cntQuery.Debug()
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			cntQuery = cntQuery.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	cnt := cntQuery.Model(mdl).Where(filter).Count(&count)
 	if cnt.Error != nil {
 		return dtos.InternalErrMS[int64](cnt.Error.Error()), cnt.Error
 	}
 	return dtos.SuccessS(count, cnt.RowsAffected), nil
+}
+
+func DbFetchWihtIn[T any](u *gorm.DB, ctx context.Context, inKey string, names []string, options *Opt) (dtos.PResp[[]T], error) {
+	var dataList []T
+	query := u.WithContext(ctx)
+	query = DebugPreloadSelect(query, options, nil)
+	query = query.Where(fmt.Sprintf("%s IN (?)", inKey), names)
+	//================.  Authorization Queries. ==========
+	if options != nil {
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+	}
+	//use a differnet session after this
+	query = query.Session(&gorm.Session{})
+	resp := query.Model(dataList).Find(&dataList)
+	if resp.Error != nil {
+		return dtos.PInternalErrS[[]T](resp.Error.Error()), resp.Error
+	}
+
+	var count int64
+	cnt := query.Model(dataList).Count(&count)
+	if cnt.Error != nil {
+		return dtos.PInternalErrS[[]T](cnt.Error.Error()), cnt.Error
+	}
+
+	return dtos.ReturnOffsetPaginatedS[[]T](dataList, count, true, resp.RowsAffected), nil
 }
 
 func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto any, options *Opt) (dtos.GResp[T], error) {
@@ -223,6 +292,12 @@ func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto 
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	resp := query.Clauses(clause.Returning{}).Model(&result).Where(filter).Updates(updateDto)
 	if resp.Error != nil {
@@ -246,11 +321,17 @@ func DbDeleteByFilter[T any](u *gorm.DB, ctx context.Context, filter any, option
 	result := new(T)
 	query := u.WithContext(ctx)
 	if options != nil {
+
 		if options.Debug {
 			query = query.Debug()
 		}
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
+		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
 		}
 	}
 
@@ -289,6 +370,12 @@ func DbCreateMany[T any](u *gorm.DB, ctx context.Context, value any, options *Op
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	resp := query.Clauses(clause.OnConflict{DoNothing: true}, clause.Returning{}).Model(&result).Create(&result)
 	if resp.Error != nil {
@@ -310,6 +397,12 @@ func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any,
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	resp := query.Clauses(clause.Returning{}).Model(&result).Where(filter).Updates(updateDto)
 	if resp.Error != nil {
@@ -334,6 +427,12 @@ func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *O
 		for _, pre := range options.Preloads {
 			query = query.Preload(pre)
 		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
 	}
 	resp := query.Model(result).Where(util.UnwrapAny(filter)).Delete(&result)
 
@@ -363,6 +462,12 @@ func DbUpsertManyWithValues[T any](u *gorm.DB, ctx context.Context, value any, o
 	if options.Debug {
 		query = query.Debug()
 	}
+	//================.  Authorization Queries. ==========
+	if options.AuthKey != nil && options.AuthVal != nil {
+		queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+		query = query.Where(queryStr, options.AuthVal)
+	}
+
 	for _, pre := range options.Preloads {
 		query = query.Preload(pre)
 	}

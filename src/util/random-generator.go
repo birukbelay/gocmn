@@ -6,6 +6,8 @@ import (
 )
 
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+const uniqueLooking = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"
+const chashing = "Il1,0oO,"
 
 func GenerateRandomString(length int) string {
 	result := make([]byte, length)

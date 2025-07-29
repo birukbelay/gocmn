@@ -34,6 +34,8 @@ type AssocVar struct {
 	EmptyingAssociation bool
 	Debug               bool
 	Preloads            []string
+	AuthKey             *string
+	AuthVal             *string
 }
 
 func isEmptyStruct(s interface{}) bool {
