@@ -66,6 +66,29 @@ func (u *CloudinaryUpload) UploadSingleFile(file *multipart.FileHeader) (resp.GR
 	return response, nil
 }
 
+// UploadSingleFile uploads a file to Cloudinary with a generated name
+func (u *CloudinaryUpload) UploadFile(file multipart.File) (resp.GResp[upload.UploadDto], error) {
+	// Validate file (reusing your existing function)
+	response, err := upload.ValidateJustFile(file)
+	if err != nil {
+		return response, err
+	}
+	// Upload to Cloudinary
+	ctx := context.Background()
+	uploadResult, err := u.Cloud.Upload.Upload(ctx, file, uploader.UploadParams{
+		Folder: u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
+	})
+	if err != nil {
+		return resp.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.UpdateSuccess), err
+	}
+	// Populate response
+	response.Body.Name = filepath.Base(uploadResult.PublicID) // e.g., "random123"
+	response.Body.Path = uploadResult.PublicID                // Full Cloudinary path, e.g., "uploads/random123"
+	response.Body.Url = uploadResult.SecureURL                // HTTPS URL for access
+	response.Body.Size = int64(uploadResult.Bytes)            // Update size from Cloudinary
+	return response, nil
+}
+
 // UploadWithGivenName uploads a file to Cloudinary with a specified name
 func (u *CloudinaryUpload) UploadWithGivenName(file *multipart.FileHeader, name string) (resp.GResp[upload.UploadDto], error) {
 	// Validate file
@@ -74,9 +97,7 @@ func (u *CloudinaryUpload) UploadWithGivenName(file *multipart.FileHeader, name 
 		return response, err
 	}
 
-	// Get file extension from MIME type
-	ext := upload.MimeToExtension(response.Body.FileType)
-	fileName := name + ext
+	fileName := name + response.Body.Ext
 
 	// Open the file
 	f, err := file.Open()

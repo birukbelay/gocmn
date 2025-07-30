@@ -15,18 +15,6 @@ func NewGenericAuthController[T, C, U, F any, Q Queryable](db *gorm.DB, authKey,
 	return &IGenericController[T, C, U, F, Q]{GormConn: db, AuthKey: authKey, AuthValGetter: authValGetter}
 }
 
-//	func (uh *IGenericController[T, C, U, F, Q]) AuthCreateOne(ctx context.Context, inputs *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
-//		k, ok := ctx.Value("validationKey").(string)
-//		if !ok {
-//			return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
-//		}
-//		v, ok := ctx.Value("validationValue").(string)
-//		if !ok {
-//			return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
-//		}
-//		resp, err := DbCreateOne[T](uh.GormConn, ctx, inputs.Body, &Opt{AuthKey: &k, AuthVal: &v})
-//		return dtos.HumaReturnG(resp, err)
-//	}
 func (uh *IGenericController[T, C, U, F, Q]) AuthGetOneByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {

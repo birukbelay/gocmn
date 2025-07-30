@@ -51,6 +51,14 @@ func RespStatusMsg[T any](message string, status int) *GResp[T] {
 	}
 }
 
+// RespStatusMsg is GENERIC user supply msg and Status code
+func RespStatusMsgS[T any](message string, status int) GResp[T] {
+	return GResp[T]{
+		Status: status,
+		Error:  message,
+	}
+}
+
 //====================================   Success Messages =======================
 
 // SuccessS `PARAM: item, rowsaffected`   , mostly we dont need code for sucess `P!`
@@ -128,7 +136,7 @@ func BadReqRespMsgCode[T any](message string, code resp_const.RespCode) GResp[T]
 
 //=================  other errors
 
-//InternalErrMS : m shows accepts Message
+// InternalErrMS : m shows accepts Message
 func InternalErrMS[T any](message string) GResp[T] {
 	return GResp[T]{
 		Status: http.StatusInternalServerError,

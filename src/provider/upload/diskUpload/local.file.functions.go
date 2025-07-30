@@ -36,6 +36,20 @@ func SaveFileOnDisk(file *multipart.FileHeader, dst string) error {
 	_, err = io.Copy(out, src)
 	return err
 }
+func SaveFileToDisk(src multipart.File, dst string) error {
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0750); err != nil {
+		return err
+	}
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
+}
 func DeleteFileWithNameL(fileName string) error {
 	// delete local
 	wd, err := os.Getwd()
@@ -69,12 +83,35 @@ func (u LocalUpload) UploadSingleFile(file *multipart.FileHeader) (resp.GResp[up
 	}
 	//TODO: compress file Here Before Save, & shift size & hash Calculation to here, may be hash should not be moved
 
-	fileName, filePath, err := upload.CreateUploadPath(file.Filename)
+	ext := upload.MimeToExtension(response.Body.FileType)
+	fileName, filePath, err := upload.CreateUploadPath(file.Filename, ext)
 	if err != nil {
 		return resp.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
 	}
 
 	if err := SaveFileOnDisk(file, filePath); err != nil {
+		return resp.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.UpdateSuccess), err
+	}
+	response.Body.Name = fileName
+	response.Body.Path = filePath
+	response.Body.Url = consts.FileServingUrl + fileName
+	return response, nil
+}
+
+func (u LocalUpload) UploadFile(file multipart.File) (resp.GResp[upload.UploadDto], error) {
+	//returns file with, fileSize, hash & contentType
+	response, err := upload.ValidateJustFile(file)
+	if err != nil {
+		return response, err
+	}
+	//TODO: compress file Here Before Save, & shift size & hash Calculation to here, may be hash should not be moved
+
+	fileName, filePath, err := upload.CreateUploadPath("a", response.Body.Ext)
+	if err != nil {
+		return resp.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
+	}
+
+	if err := SaveFileToDisk(file, filePath); err != nil {
 		return resp.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.UpdateSuccess), err
 	}
 	response.Body.Name = fileName
@@ -88,8 +125,7 @@ func (u LocalUpload) UploadWithGivenName(file *multipart.FileHeader, name string
 	if err != nil {
 		return response, err
 	}
-	ext := upload.MimeToExtension(response.Body.FileType)
-	fileName := name + ext
+	fileName := name + response.Body.Ext
 	//TODO: compress file Here Before Save, & shift size & hash Calculation to here, may be hash should not be moved
 
 	filePath, err := upload.CreateCleanUploadPath(fileName)

@@ -1,11 +1,10 @@
 package upload
 
-import "fmt"
-
 import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -33,6 +32,16 @@ func ValidateFile(header *multipart.FileHeader) (dtos.GResp[UploadDto], error) {
 		return dtos.BadReqRespMsgCode[UploadDto](err.Error(), resp_const.InvalidFileType), err
 	}
 
+	val, err := ValidateJustFile(file)
+	if err == nil {
+		val.Body.Size = fileSize
+	}
+	return val, err
+}
+
+// ValidateFile validates & calculate size, detect filetype, calculate hash
+func ValidateJustFile(file multipart.File) (dtos.GResp[UploadDto], error) {
+
 	// =====================       Calculate the hash      =====================
 	//==========================================================================
 	hash := sha256.New()
@@ -41,7 +50,7 @@ func ValidateFile(header *multipart.FileHeader) (dtos.GResp[UploadDto], error) {
 	}
 	hashInBytes := hash.Sum(nil)
 	hashString := hex.EncodeToString(hashInBytes)
-	_, err = file.Seek(0, io.SeekStart)
+	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
 		return dtos.BadReqRespMsgCode[UploadDto](err.Error(), resp_const.InvalidFileType), err
 	}
@@ -53,9 +62,9 @@ func ValidateFile(header *multipart.FileHeader) (dtos.GResp[UploadDto], error) {
 		return dtos.BadReqRespMsgCode[UploadDto](er.Error(), resp_const.InvalidFileType), err
 	}
 	return dtos.GResp[UploadDto]{Body: UploadDto{
-		Size:     fileSize,
 		FileType: contentType,
 		Hash:     hashString,
+		Ext:      MimeToExtension(contentType),
 	}}, nil
 }
 

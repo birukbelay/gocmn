@@ -23,4 +23,5 @@ type UploadDto struct {
 	FileType string `json:"file_type"`
 	Size     int64  `json:"size"`
 	ETag     string
+	Ext      string `json:"ext"`
 }

@@ -39,7 +39,7 @@ func (g *GarageS3Client) UploadSingleFile(file *multipart.FileHeader) (dtos.GRes
 	if err != nil {
 		return response, err
 	}
-	fileName := upload.CreateFileName(file.Filename)
+	fileName := upload.CreateFileName(file.Filename, response.Body.Ext)
 
 	src, err := file.Open()
 	if err != nil {
