@@ -1,4 +1,4 @@
-package providers
+package db
 
 import (
 	"context"
