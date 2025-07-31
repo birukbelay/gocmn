@@ -34,21 +34,27 @@ func NewLocS3FuncClient(config config.S3Config) (upload.FileUploadInterface, err
 	}, nil
 }
 
-func (g *GarageS3Client) UploadSingleFile(file *multipart.FileHeader) (dtos.GResp[upload.UploadDto], error) {
+func (g *GarageS3Client) UploadFileHeader(file *multipart.FileHeader, opt *upload.Opts) (dtos.GResp[*upload.UploadDto], error) {
 	response, err := upload.ValidateFile(file)
 	if err != nil {
 		return response, err
 	}
-	fileName := upload.CreateFileName(file.Filename, response.Body.Ext)
+	file_name := file.Filename
+	if opt != nil {
+		if opt.FileName != nil {
+			file_name = *opt.FileName
+		}
+	}
+	fileName := upload.CreateCleanFileNameWithExt(file_name, response.Body.Ext)
 
 	src, err := file.Open()
 	if err != nil {
-		return dtos.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
+		return dtos.BadReqRespMsgCode[*upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
 	}
 	defer src.Close()
 	uploadRes, err := g.SaveFileFromReader(src, fileName)
 	if err != nil {
-		return dtos.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
+		return dtos.BadReqRespMsgCode[*upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
 	}
 
 	response.Body.Name = uploadRes.Name
@@ -56,29 +62,7 @@ func (g *GarageS3Client) UploadSingleFile(file *multipart.FileHeader) (dtos.GRes
 
 	return response, nil
 }
-func (g *GarageS3Client) UploadWithGivenName(file *multipart.FileHeader, name string) (dtos.GResp[upload.UploadDto], error) {
-	response, err := upload.ValidateFile(file)
-	if err != nil {
-		return response, err
-	}
-	ext := upload.MimeToExtension(response.Body.FileType)
-	fileName := name + ext
 
-	src, err := file.Open()
-	if err != nil {
-		return dtos.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
-	}
-	defer src.Close()
-	uploadRes, err := g.SaveFileFromReader(src, fileName)
-	if err != nil {
-		return dtos.BadReqRespMsgCode[upload.UploadDto](err.Error(), resp_const.CantReadFileType), err
-	}
-
-	response.Body.Name = uploadRes.Name
-	response.Body.Url = uploadRes.Url
-
-	return response, nil
-}
 func (g *GarageS3Client) DeleteFileWithName(fileName string) error {
 	_, err := g.client.DeleteObject(&s3.DeleteObjectInput{
 		Bucket: aws.String(g.bucketName),

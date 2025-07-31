@@ -17,22 +17,22 @@ import (
 )
 
 // ValidateFile validates & calculate size, detect filetype, calculate hash
-func ValidateFile(header *multipart.FileHeader) (dtos.GResp[UploadDto], error) {
+func ValidateFile(header *multipart.FileHeader) (dtos.GResp[*UploadDto], error) {
 
 	// =====================       Validate the file Size the hash      =====================
 	//==========================================================================
 	fileSize := header.Size
 	if fileSize > file_const.MaxSingleUploadSize.Int64() {
-		return dtos.BadReqRespMsgCode[UploadDto](resp_const.FileTooBig.Msg(), resp_const.FileTooBig),
+		return dtos.BadReqRespMsgCode[*UploadDto](resp_const.FileTooBig.Msg(), resp_const.FileTooBig),
 			errors.New("single CoverImage size Exeded limit of 10 MB" + fmt.Sprint(fileSize))
 	}
 	file, err := header.Open()
 	defer file.Close()
 	if err != nil {
-		return dtos.BadReqRespMsgCode[UploadDto](err.Error(), resp_const.InvalidFileType), err
+		return dtos.BadReqRespMsgCode[*UploadDto](err.Error(), resp_const.InvalidFileType), err
 	}
 
-	val, err := ValidateJustFile(file)
+	val, err := GetFileInfo(file)
 	if err == nil {
 		val.Body.Size = fileSize
 	}
@@ -40,32 +40,32 @@ func ValidateFile(header *multipart.FileHeader) (dtos.GResp[UploadDto], error) {
 }
 
 // ValidateFile validates & calculate size, detect filetype, calculate hash
-func ValidateJustFile(file multipart.File) (dtos.GResp[UploadDto], error) {
+func GetFileInfo(file multipart.File) (dtos.GResp[*UploadDto], error) {
 
 	// =====================       Calculate the hash      =====================
 	//==========================================================================
 	hash := sha256.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		return dtos.BadReqRespMsgCode[UploadDto](err.Error(), resp_const.InvalidFileType), err
+		return dtos.BadReqRespMsgCode[*UploadDto](err.Error(), resp_const.InvalidFileType), err
 	}
 	hashInBytes := hash.Sum(nil)
 	hashString := hex.EncodeToString(hashInBytes)
 	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
-		return dtos.BadReqRespMsgCode[UploadDto](err.Error(), resp_const.InvalidFileType), err
+		return dtos.BadReqRespMsgCode[*UploadDto](err.Error(), resp_const.InvalidFileType), err
 	}
 	/* ==============================  Detect File Type ================================
 	====================================================================================*/
 	//TODO: make the function take the allowed types and size as a parameter
 	contentType, er := DetectFileType(file)
 	if er != nil {
-		return dtos.BadReqRespMsgCode[UploadDto](er.Error(), resp_const.InvalidFileType), err
+		return dtos.BadReqRespMsgCode[*UploadDto](er.Error(), resp_const.InvalidFileType), err
 	}
-	return dtos.GResp[UploadDto]{Body: UploadDto{
+	return dtos.SuccessS(&UploadDto{
 		FileType: contentType,
 		Hash:     hashString,
 		Ext:      MimeToExtension(contentType),
-	}}, nil
+	}, 1), nil
 }
 
 type FileType string

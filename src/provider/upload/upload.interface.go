@@ -8,9 +8,10 @@ import (
 
 // FileUploadInterface is only concerned with the file upload, not the authentication or database
 type FileUploadInterface interface {
-	//UploadSingleFile TODO accept allowed FileTypes & prefix as a param
-	UploadSingleFile(file *multipart.FileHeader) (dtos.GResp[UploadDto], error)
-	UploadWithGivenName(file *multipart.FileHeader, name string) (dtos.GResp[UploadDto], error)
+	UploadFile(src multipart.File, opt *Opts) (dtos.GResp[*UploadDto], error)
+	//UploadFileHeader TODO accept allowed FileTypes & prefix as a param
+	UploadFileHeader(file *multipart.FileHeader, opt *Opts) (dtos.GResp[*UploadDto], error)
+	// UploadWithGivenName(file *multipart.FileHeader, name string) (dtos.GResp[UploadDto], error)
 	DeleteFileWithName(fileName string) error
 }
 
@@ -24,4 +25,8 @@ type UploadDto struct {
 	Size     int64  `json:"size"`
 	ETag     string
 	Ext      string `json:"ext"`
+}
+
+type Opts struct {
+	FileName *string
 }
