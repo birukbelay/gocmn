@@ -3,8 +3,6 @@ package smtp
 import (
 	"bytes"
 	"net/smtp"
-	"os"
-	"path/filepath"
 
 	"github.com/birukbelay/gocmn/src/provider/email"
 	"github.com/birukbelay/gocmn/src/provider/email/templates"
@@ -66,4 +64,3 @@ func (h *SmtpSender) SendEmailT(fields email.EmailFields, body string) error {
 	)
 	return err
 }
-
