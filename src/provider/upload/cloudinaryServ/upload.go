@@ -63,6 +63,19 @@ func (u *CloudinaryUpload) UploadFile(file multipart.File, opt *upload.Opts) (re
 	return response, nil
 }
 
+// func (u *CloudinaryUpload) GenerateSignedUrl(publicId string, minutes int) (string, error) {
+// 	secure := true
+// 	expiresAt := time.Now().Add(minutes * time.Minute).Unix()
+
+// 	url, err := u.Cloud.
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	return url.AuthToken., nil
+
+// }
+
 // DeleteFileWithName deletes a file from Cloudinary by its name (PublicID)
 func (u *CloudinaryUpload) DeleteFileWithName(fileName string) error {
 	ctx := context.Background()
