@@ -15,6 +15,7 @@ type IGenericController[T, C, U, F any, Q Queryable] struct {
 	//Conf     *conf.EnvConfig
 	//Service  IGenericGormServT[T, C, U, F]
 }
+
 type Input[T any, S any] struct {
 	Filter T
 	Query  S
@@ -24,7 +25,7 @@ func NewGenericController[T, C, U, F any, Q Queryable](db *gorm.DB) *IGenericCon
 	return &IGenericController[T, C, U, F, Q]{GormConn: db}
 }
 
-
+// TODO This is is useless Because Filter and Query Cant Be set
 func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, filter *struct {
 	Filter F
 	Query  Q

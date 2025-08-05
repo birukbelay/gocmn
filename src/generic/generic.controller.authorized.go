@@ -8,14 +8,33 @@ import (
 	"gorm.io/gorm"
 
 	models "github.com/birukbelay/gocmn/src/base"
+	"github.com/birukbelay/gocmn/src/consts"
 	"github.com/birukbelay/gocmn/src/dtos"
 )
 
-func NewGenericAuthController[T, C, U, F any, Q Queryable](db *gorm.DB, authKey, authValGetter string) *IGenericController[T, C, U, F, Q] {
-	return &IGenericController[T, C, U, F, Q]{GormConn: db, AuthKey: authKey, AuthValGetter: authValGetter}
+type IGenericAuthController[T any, C Settable, U, F any, Q Queryable] struct {
+	GormConn      *gorm.DB
+	AuthKey       string
+	AuthValGetter string
+	//Conf     *conf.EnvConfig
+	//Service  IGenericGormServT[T, C, U, F]
 }
 
-func (uh *IGenericController[T, C, U, F, Q]) AuthGetOneByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func NewGenericAuthController[T any, C Settable, U, F any, Q Queryable](db *gorm.DB, authKey consts.AUTH_FIELD, authValGetter consts.ContextKey) *IGenericAuthController[T, C, U, F, Q] {
+	return &IGenericAuthController[T, C, U, F, Q]{GormConn: db, AuthKey: authKey.S(), AuthValGetter: authValGetter.Str()}
+}
+
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCreateOne(ctx context.Context, dto *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	v, ok := ctx.Value(uh.AuthValGetter).(string)
+	if !ok {
+		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
+	}
+	dto.Body.SetOnCreate(v)
+	resp, err := DbCreateOne[T](uh.GormConn, ctx, dto.Body, &Opt{Debug: true})
+	return dtos.HumaReturnG(resp, err)
+}
+
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthGetOneByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
@@ -23,7 +42,7 @@ func (uh *IGenericController[T, C, U, F, Q]) AuthGetOneByFilter(ctx context.Cont
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
 	return dtos.HumaReturnG(resp, err)
 }
-func (uh *IGenericController[T, C, U, F, Q]) AuthGetOneById(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthGetOneById(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
@@ -32,7 +51,7 @@ func (uh *IGenericController[T, C, U, F, Q]) AuthGetOneById(ctx context.Context,
 	return dtos.HumaReturnG(resp, err)
 }
 
-func (uh *IGenericController[T, C, U, F, Q]) AuthUpdateOneById(ctx context.Context, dto *dtos.HumaReqBodyId[U]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthUpdateOneById(ctx context.Context, dto *dtos.HumaReqBodyId[U]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
@@ -41,7 +60,7 @@ func (uh *IGenericController[T, C, U, F, Q]) AuthUpdateOneById(ctx context.Conte
 	return dtos.HumaReturnG(resp, err)
 }
 
-func (uh *IGenericController[T, C, U, F, Q]) AuthDeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthDeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
@@ -50,7 +69,7 @@ func (uh *IGenericController[T, C, U, F, Q]) AuthDeleteOneByID(ctx context.Conte
 	return dtos.HumaReturnG(resp, err)
 }
 
-func (uh *IGenericController[T, C, U, F, Q]) AuthCountRecords(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCountRecords(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")

@@ -59,3 +59,7 @@ func isEmptyStruct(s interface{}) bool {
 type Queryable interface {
 	GetQueries() (string, []string)
 }
+
+type Settable interface {
+	SetOnCreate(key string)
+}
