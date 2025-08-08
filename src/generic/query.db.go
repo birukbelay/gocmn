@@ -34,6 +34,11 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
 			query = query.Where(queryStr, options.AuthVal)
 		}
+		if len(options.WhereQuery) > 0 {
+			for _, where := range options.WhereQuery {
+				query = query.Where(where.Query, where.Args...)
+			}
+		}
 	}
 
 	//tags
@@ -78,6 +83,11 @@ func DbFetchManyWithCursor[T any](u *gorm.DB, ctx context.Context, filter any, p
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
 			query = query.Where(queryStr, options.AuthVal)
+		}
+		if len(options.WhereQuery) > 0 {
+			for _, where := range options.WhereQuery {
+				query = query.Where(where.Query, where.Args...)
+			}
 		}
 	}
 
@@ -129,6 +139,11 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
 			query = query.Where(queryStr, options.AuthVal)
+		}
+		if len(options.WhereQuery) > 0 {
+			for _, where := range options.WhereQuery {
+				query = query.Where(where.Query, where.Args...)
+			}
 		}
 	}
 

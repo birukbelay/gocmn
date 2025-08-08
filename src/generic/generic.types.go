@@ -17,6 +17,11 @@ type Opt struct {
 	Columns       []clause.Column
 	AuthKey       *string
 	AuthVal       *string
+	WhereQuery    []WhereStr
+}
+type WhereStr struct {
+	Query interface{}
+	Args  []interface{}
 }
 
 type AssociationKey string
