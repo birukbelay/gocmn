@@ -5,30 +5,8 @@ import (
 	"net/smtp"
 
 	"github.com/birukbelay/gocmn/src/provider/email"
-	"github.com/birukbelay/gocmn/src/provider/email/templates"
 )
 
-// SendEmail accepths template path & parses it and sends it as email
-func (h *SmtpSender) SendEmail(to, subject string, templatePath email.EmailTemplates, templateStruct any) error {
-
-	f, err := templates.Embedded.Open(templatePath.S())
-	if err != nil {
-		panic(err)
-	}
-
-	body, err := email.ParseEmbededTemplate(f, templateStruct)
-	if err != nil {
-		return err
-	}
-
-	emailFields := email.EmailFields{
-		To:      to,
-		From:    h.From,
-		Subject: subject,
-	}
-
-	return h.SendEmailT(emailFields, body)
-}
 
 // SendEmail sends an email using Gmail SMTP
 func (h *SmtpSender) SendEmailT(fields email.EmailFields, body string) error {

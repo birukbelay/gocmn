@@ -31,7 +31,7 @@ func (h *SmtpSender) SendVerificationCodeEmbeded(to string, code string) error {
 	return h.SendEmailTmpl(emailFields, verificationData)
 }
 
-// SendEmail given htmlPath
+// SendEmail given htmlPath, directory inside fields.HtmlPath
 func (h *SmtpSender) SendEmailTmpl(fields email.EmailFields, templateStruct any) error {
 	// Parse the email template
 	body, err := email.ParseEmailTemplate(fields.HtmlPath, templateStruct)
