@@ -4,7 +4,6 @@ import (
 	"embed"
 
 	"github.com/birukbelay/gocmn/src/provider/email"
-	"github.com/birukbelay/gocmn/src/provider/email/templates"
 )
 
 type SmtpSender struct {
