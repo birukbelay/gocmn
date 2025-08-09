@@ -17,11 +17,11 @@ type CloudinaryConfig struct {
 }
 
 type SqlDbConfig struct {
-	DbName   string `koanf:"POSTGRES_DB"`
-	Username string `koanf:"POSTGRES_USER"`
-	Password string `koanf:"POSTGRES_PASSWORD"`
-	SqlHost  string `koanf:"POSTGRES_HOST"`
-	SqlPort  string `koanf:"POSTGRES_PORT"`
+	DbName   string `koanf:"SQL_DB_NAME"`
+	Username string `koanf:"SQL_USERNAME"`
+	Password string `koanf:"SQL_PASSWORD"`
+	SqlHost  string `koanf:"SQL_HOST"`
+	SqlPort  string `koanf:"SQL_PORT"`
 	Driver   string `koanf:"SQL_DRIVER"`
 	SSLMode  string `koanf:"SSL_MODE"`
 }

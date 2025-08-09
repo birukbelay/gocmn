@@ -1,9 +1,17 @@
 # some usefull commands
 
-- tagging:
+## tagging
 
-> git tag v1.0
 > git tag -a v1.0 -m "Release version 1.0"
+> git push origin --tags
+
+- .
+
+> git tag      // to list tags
+> git tag v1.0
+> git push origin v1.0
+
+### all commands
 
 - View Tags
 
