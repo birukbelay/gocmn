@@ -4,6 +4,8 @@ import (
 	"reflect"
 
 	"gorm.io/gorm/clause"
+
+	"github.com/birukbelay/gocmn/src/dtos"
 )
 
 type KeyArr map[string][]string
@@ -62,9 +64,12 @@ func isEmptyStruct(s interface{}) bool {
 }
 
 type Queryable interface {
-	GetQueries() (string, []string)
+	// GetQueries() (string, []string)
+	GetFilter() (f any, pagi dtos.PaginationInput)
 }
-
+type Filterable interface {
+	GetFilter() (f any, pagi dtos.PaginationInput)
+}
 type Settable interface {
 	SetOnCreate(key string)
 }

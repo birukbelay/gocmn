@@ -24,6 +24,25 @@ func NewGenericAuthController[T any, C Settable, U, F any, Q Queryable](db *gorm
 	return &IGenericAuthController[T, C, U, F, Q]{GormConn: db, AuthKey: authKey.S(), AuthValGetter: authValGetter.Str()}
 }
 
+func (uh *IGenericAuthController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	filter, pagi := query.GetFilter()
+	v, ok := ctx.Value(uh.AuthValGetter).(string)
+	if !ok {
+		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
+	}
+	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
+	return dtos.PHumaReturn(resp, err)
+}
+func (uh *IGenericAuthController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	filter, pagi := query.GetFilter()
+	v, ok := ctx.Value(uh.AuthValGetter).(string)
+	if !ok {
+		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
+	}
+	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
+	return dtos.PHumaReturn(resp, err)
+}
+
 func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCreateOne(ctx context.Context, dto *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
@@ -77,3 +96,5 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCountRecords(ctx context.Co
 	resp, err := DbCount[T](uh.GormConn, ctx, filter, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
 	return dtos.HumaReturnG(resp, err)
 }
+
+//DELETE & UPDATE by filter are very risky, so not implemented

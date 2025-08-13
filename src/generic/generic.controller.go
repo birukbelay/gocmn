@@ -25,27 +25,18 @@ func NewGenericController[T, C, U, F any, Q Queryable](db *gorm.DB) *IGenericCon
 	return &IGenericController[T, C, U, F, Q]{GormConn: db}
 }
 
-// TODO This is is useless Because Filter and Query Cant Be set
-func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, filter *struct {
-	Filter F
-	Query  Q
-	dtos.PaginationInput
-}) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	sort, selectedFields := filter.Query.GetQueries()
-	filter.PaginationInput.Select = selectedFields
-	filter.PaginationInput.SortBy = sort
-	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter.Filter, filter.PaginationInput, &Opt{})
+func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	filter, pagi := query.GetFilter()
+	// filter.PaginationInput.Select = selectedFields
+	// filter.PaginationInput.SortBy = sort
+	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, &Opt{})
 	return dtos.PHumaReturn(resp, err)
 }
-func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, filter *struct {
-	Filter F
-	Query  Q
-	dtos.PaginationInput
-}) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	sort, selectedFields := filter.Query.GetQueries()
-	filter.PaginationInput.Select = selectedFields
-	filter.PaginationInput.SortBy = sort
-	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter.Filter, filter.PaginationInput, &Opt{})
+func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	filter, pagi := query.GetFilter()
+	// filter.PaginationInput.Select = selectedFields
+	// filter.PaginationInput.SortBy = sort
+	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, &Opt{})
 	return dtos.PHumaReturn(resp, err)
 }
 

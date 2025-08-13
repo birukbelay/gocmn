@@ -43,21 +43,28 @@ type CursorStruct struct {
 }
 
 type PaginationInput struct {
-	Limit  int    `default:"25" form:"limit,omitempty" query:"limit"`
-	Cursor string `form:"cursor" query:"cursor"`
-	Page   int    `default:"1" form:"page" query:"page"`
-	//sorting
-	SortDir     string   `form:"dir" query:"sort_dir" enum:"asc,desc" default:"desc"`
-	SortBy      string   `form:"ord" query:"-" ` //we dont use this because we override it with the models Sort
-	AllowedSort []string `form:"-"  `
-	Select      []string ``
-	Tags        []string `query:"tags"`
-	Query       string   `query:"q"`
-	Like        string   `query:"like"`
-	ColName     string   `query:"-"`
-	ColNames    []string `query:"-"`
-	StartDate   string   `query:"start_date"`
-	EndDate     string   `query:"end_date"`
+	Limit   int    `default:"25" query:"_limit"`
+	Page    int    `default:"1"  query:"_page"`
+	SortDir string ` query:"_sort_dir" enum:"asc,desc" default:"desc"`
+	Cursor  string ` query:"_cursor"`
+
+	//fields that are overridden on api side, by default
+	Select []string `query:"-"`
+	SortBy string   `query:"-" ` //we dont use this because we override it with the models Sort
+
+	//fields that are not allowed on api side, but used internally
+	ColName  string   `query:"-"`
+	ColNames []string `query:"-"`
+	//fields that need to be set on the api side to be used
+	Like  string `query:"-"` //set `ColName`` on api side to use this
+	Query string `query:"-"` //set `ColNames` on api side to use this
+	//fields that need to be set on the api side to be used
+	StartDate string `query:"-"`
+	EndDate   string `query:"-"` //todo, these should also be allowed on api side
+
+	//unused fields
+	Tags        []string `query:"-"`
+	AllowedSort []string `query:"-"  `
 }
 
 type LocResp[T any] struct {
