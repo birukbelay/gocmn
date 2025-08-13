@@ -12,7 +12,7 @@ import (
 	"github.com/birukbelay/gocmn/src/dtos"
 )
 
-type IGenericAuthController[T any, C Settable, U, F any, Q Queryable] struct {
+type IGenericAuthController[T any, C Settable, U, F any, Q Queryable[F]] struct {
 	GormConn      *gorm.DB
 	AuthKey       string
 	AuthValGetter string
@@ -20,12 +20,13 @@ type IGenericAuthController[T any, C Settable, U, F any, Q Queryable] struct {
 	//Service  IGenericGormServT[T, C, U, F]
 }
 
-func NewGenericAuthController[T any, C Settable, U, F any, Q Queryable](db *gorm.DB, authKey consts.AUTH_FIELD, authValGetter consts.ContextKey) *IGenericAuthController[T, C, U, F, Q] {
+func NewGenericAuthController[T any, C Settable, U, F any, Q Queryable[F]](db *gorm.DB, authKey consts.AUTH_FIELD, authValGetter consts.ContextKey) *IGenericAuthController[T, C, U, F, Q] {
 	return &IGenericAuthController[T, C, U, F, Q]{GormConn: db, AuthKey: authKey.S(), AuthValGetter: authValGetter.Str()}
 }
 
-func (uh *IGenericAuthController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	filter, pagi := query.GetFilter()
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthOffsetPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	val := *query
+	filter, pagi := val.GetFilter()
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
@@ -33,8 +34,9 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) OffsetPaginated(ctx context.Con
 	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
 	return dtos.PHumaReturn(resp, err)
 }
-func (uh *IGenericAuthController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	filter, pagi := query.GetFilter()
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCursorPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	val := *query
+	filter, pagi := val.GetFilter()
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")

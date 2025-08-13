@@ -8,7 +8,7 @@ import (
 	"github.com/birukbelay/gocmn/src/dtos"
 )
 
-type IGenericController[T, C, U, F any, Q Queryable] struct {
+type IGenericController[T, C, U, F any, Q Queryable[F]] struct {
 	GormConn      *gorm.DB
 	AuthKey       string
 	AuthValGetter string
@@ -21,19 +21,21 @@ type Input[T any, S any] struct {
 	Query  S
 }
 
-func NewGenericController[T, C, U, F any, Q Queryable](db *gorm.DB) *IGenericController[T, C, U, F, Q] {
+func NewGenericController[T, C, U, F any, Q Queryable[F]](db *gorm.DB) *IGenericController[T, C, U, F, Q] {
 	return &IGenericController[T, C, U, F, Q]{GormConn: db}
 }
 
-func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	filter, pagi := query.GetFilter()
+func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	val := *query
+	filter, pagi := val.GetFilter()
 	// filter.PaginationInput.Select = selectedFields
 	// filter.PaginationInput.SortBy = sort
 	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, &Opt{})
 	return dtos.PHumaReturn(resp, err)
 }
-func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
-	filter, pagi := query.GetFilter()
+func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
+	val := *query
+	filter, pagi := val.GetFilter()
 	// filter.PaginationInput.Select = selectedFields
 	// filter.PaginationInput.SortBy = sort
 	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, &Opt{})
