@@ -16,7 +16,18 @@ type RedisService struct {
 }
 
 // Exists implements providers.KeyValServ.
-func NewRedis(config *conf.KeyValConfig) (db.KeyValServ, error) {
+func NewRedis(config *conf.KeyValConfig) (*RedisService, error) {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%s", config.KVHost, config.KVPort),
+		Password: config.KVPassword, // no password set if empty
+		DB:       config.KVDbName,   // use default DB
+		Username: config.KVUsername,
+	})
+	return &RedisService{RedisClient: rdb}, nil
+}
+
+// Exists implements providers.KeyValServ.
+func NewKeyValServ(config *conf.KeyValConfig) (db.KeyValServ, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.KVHost, config.KVPort),
 		Password: config.KVPassword, // no password set if empty

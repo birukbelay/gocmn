@@ -63,9 +63,9 @@ func isEmptyStruct(s interface{}) bool {
 	return true
 }
 
-type Queryable[T any] interface {
+type Queryable[F any] interface {
 	// GetQueries() (string, []string)
-	GetFilter() (f T, pagi dtos.PaginationInput)
+	GetFilter() (f F, pagi dtos.PaginationInput)
 }
 type Filterable interface {
 	GetFilter() (f any, pagi dtos.PaginationInput)

@@ -50,8 +50,9 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) AuthCreateOne(ctx context.Conte
 	if !ok {
 		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
 	}
-	dto.Body.SetOnCreate(v)
-	resp, err := DbCreateOne[T](uh.GormConn, ctx, dto.Body, &Opt{Debug: true})
+	body := dto.Body
+	body.SetOnCreate(v)
+	resp, err := DbCreateOne[T](uh.GormConn, ctx, body, &Opt{Debug: true})
 	return dtos.HumaReturnG(resp, err)
 }
 
