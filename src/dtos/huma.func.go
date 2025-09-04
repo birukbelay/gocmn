@@ -18,7 +18,7 @@ func PHumaReturn[T any](resp PResp[T], err error) (*HumaResponse[PResp[T]], erro
 		return &HumaResponse[PResp[T]]{
 			Status: resp.Status,
 			Body:   resp,
-		}, huma.NewError(resp.Status, err.Error())
+		}, huma.NewError(resp.Status, resp.Error)
 	}
 	return &HumaResponse[PResp[T]]{
 		Status: resp.Status,
@@ -71,7 +71,7 @@ func HumaReturnG[T any](resp GResp[T], err error) (*HumaResponse[GResp[T]], erro
 		return &HumaResponse[GResp[T]]{
 			Status: resp.Status,
 			Body:   resp,
-		}, huma.NewError(resp.Status, err.Error())
+		}, huma.NewError(resp.Status, resp.Error)
 	}
 	return &HumaResponse[GResp[T]]{
 		Status: resp.Status,
@@ -86,7 +86,7 @@ func HumaReturnGWithCookie[T any](resp GResp[T], err error, cookie []http.Cookie
 		return &HumaResponse[GResp[T]]{
 			Status: resp.Status,
 			Body:   resp,
-		}, huma.NewError(resp.Status, err.Error())
+		}, huma.NewError(resp.Status, resp.Error)
 	}
 	return &HumaResponse[GResp[T]]{
 		Status:    resp.Status,
@@ -137,7 +137,7 @@ func GHumaReturn[T any](resp *GResp[T], err error) (*HumaResponse[GResp[T]], err
 		return &HumaResponse[GResp[T]]{
 			Status: resp.Status,
 			Body:   *resp,
-		}, huma.NewError(resp.Status, err.Error())
+		}, huma.NewError(resp.Status, resp.Error)
 	}
 	return &HumaResponse[GResp[T]]{
 		Status: resp.Status,
