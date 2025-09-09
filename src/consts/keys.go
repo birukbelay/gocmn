@@ -21,3 +21,4 @@ func (o AUTH_FIELD) S() string {
 }
 
 var COMPANY_ID = AUTH_FIELD("company_id")
+var USER_ID = AUTH_FIELD("user_id")

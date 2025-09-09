@@ -8,16 +8,16 @@ import (
 
 func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthOffsetPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
 	val := *query
-	filter, pagi := val.GetFilter()
+	filter, pagi, opt := val.GetFilter()
 
-	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, nil)
+	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, opt)
 	return dtos.PHumaReturn(resp, err)
 }
 func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCursorPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
 	val := *query
-	filter, pagi := val.GetFilter()
+	filter, pagi, opt := val.GetFilter()
 
-	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, nil)
+	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, opt)
 	return dtos.PHumaReturn(resp, err)
 }
 

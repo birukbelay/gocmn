@@ -27,18 +27,18 @@ func NewGenericController[T, C, U, F any, Q Queryable[F]](db *gorm.DB) *IGeneric
 
 func (uh *IGenericController[T, C, U, F, Q]) OffsetPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
 	val := *query
-	filter, pagi := val.GetFilter()
+	filter, pagi,opt := val.GetFilter()
 	// filter.PaginationInput.Select = selectedFields
 	// filter.PaginationInput.SortBy = sort
-	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, &Opt{})
+	resp, err := DbFetchManyWithOffset[T](uh.GormConn, ctx, filter, pagi, opt)
 	return dtos.PHumaReturn(resp, err)
 }
 func (uh *IGenericController[T, C, U, F, Q]) CursorPaginated(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.PResp[[]T]], error) {
 	val := *query
-	filter, pagi := val.GetFilter()
+	filter, pagi,opt := val.GetFilter()
 	// filter.PaginationInput.Select = selectedFields
 	// filter.PaginationInput.SortBy = sort
-	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, &Opt{})
+	resp, err := DbFetchManyWithCursor[T](uh.GormConn, ctx, filter, pagi, opt)
 	return dtos.PHumaReturn(resp, err)
 }
 
