@@ -105,6 +105,13 @@ func NotFoundErrS[T any](message string) GResp[T] {
 		Error:  message,
 	}
 }
+func NotModifiedErr[T any](message string) GResp[T] {
+	return GResp[T]{
+		Status: http.StatusExpectationFailed,
+		Code:   resp_const.NotModified,
+		Error:  message,
+	}
+}
 
 // ===============  Bad Request ======
 

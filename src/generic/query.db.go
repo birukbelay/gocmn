@@ -185,6 +185,7 @@ func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
 
+// DbUpsertOneAllFields Update all, on conflict of these columns
 func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, options *Opt) (dtos.GResp[T], error) {
 	result := new(T)
 	if err := mapstructure.Decode(value, &result); err != nil {
@@ -214,6 +215,7 @@ func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, col
 	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
 
+// DbUpsertOneListedFields Update listed fields(updateCols), on conflict of these columns
 func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
 	result := new(T)
 	if err := mapstructure.Decode(value, &result); err != nil {
@@ -319,7 +321,7 @@ func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto 
 		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
-		return dtos.NotFoundErrS[T](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
+		return dtos.NotModifiedErr[T](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
 	}
 	return dtos.SuccessCS[T](*result, respC.UpdateSuccess, resp.RowsAffected), nil
 }
@@ -360,7 +362,7 @@ func DbDeleteByFilter[T any](u *gorm.DB, ctx context.Context, filter any, option
 		return dtos.NotFoundErrS[T](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
-		return dtos.NotFoundErrS[T]("NO records were deleted"), errors.New("NO records were deleted")
+		return dtos.NotModifiedErr[T]("NO records were deleted"), errors.New("NO records were deleted")
 	}
 	return dtos.SuccessCS[T](*result, respC.DeleteSuccess, resp.RowsAffected), nil
 
@@ -424,7 +426,7 @@ func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any,
 		return dtos.InternalErrMS[int64](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
-		return dtos.NotFoundErrS[int64](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
+		return dtos.NotModifiedErr[int64](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
 	}
 	return dtos.SuccessCS[int64](resp.RowsAffected, respC.UpdateSuccess, resp.RowsAffected), nil
 }
@@ -459,7 +461,7 @@ func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *O
 		return dtos.InternalErrMS[int64](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
-		return dtos.NotFoundErrS[int64]("NO records were deleted"), errors.New("NO records were deleted")
+		return dtos.NotModifiedErr[int64]("NO records were deleted"), errors.New("NO records were deleted")
 	}
 	return dtos.SuccessCS[int64](resp.RowsAffected, respC.DeleteSuccess, resp.RowsAffected), nil
 
