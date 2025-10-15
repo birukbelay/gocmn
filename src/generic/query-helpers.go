@@ -62,7 +62,6 @@ func DebugPreloadSelect(query *gorm.DB, options *Opt, sel []string) (q *gorm.DB)
 		}
 	}
 	if len(sel) > 0 {
-		sel = append(sel, options.Preloads...)
 		query = query.Select(sel)
 	}
 	return query
