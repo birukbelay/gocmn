@@ -24,3 +24,13 @@ func (s *Set) Contains(value string) bool {
 func (s *Set) Size() int {
 	return len(s.m)
 }
+
+func (s *Set) GetKeys() []string {
+	keys := make([]string, 0, len(s.m))
+	for k, v := range s.m {
+		if v {
+			keys = append(keys, k)
+		}
+	}
+	return keys
+}

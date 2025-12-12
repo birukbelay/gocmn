@@ -168,7 +168,7 @@ func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt
 	if err := mapstructure.Decode(value, &result); err != nil {
 		return dtos.BadReqM[T](err.Error()), err
 	}
-	query := u.WithContext(ctx)
+	query := u.WithContext(ctx).Clauses(clause.Returning{})
 	if options != nil {
 
 		if options.Debug {
@@ -208,7 +208,7 @@ func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, col
 	resp := query.Clauses(clause.OnConflict{
 		Columns:   cols,
 		UpdateAll: true,
-	}).Model(&result).Create(&result)
+	}, clause.Returning{}).Model(&result).Create(&result)
 	if resp.Error != nil {
 		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
@@ -216,7 +216,7 @@ func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, col
 }
 
 // DbUpsertOneListedFields Update listed fields(updateCols), on conflict of these columns
-func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
+func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, conflictingCols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
 	result := new(T)
 	if err := mapstructure.Decode(value, &result); err != nil {
 		return dtos.BadReqM[T](err.Error()), err
@@ -237,7 +237,7 @@ func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, 
 
 	}
 	resp := query.Clauses(clause.OnConflict{
-		Columns:   cols,
+		Columns:   conflictingCols,
 		DoUpdates: clause.AssignmentColumns(updateCols),
 	}).Model(&result).Create(&result)
 	if resp.Error != nil {
