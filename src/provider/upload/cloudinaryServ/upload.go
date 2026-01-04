@@ -50,6 +50,9 @@ func (u *CloudinaryUpload) UploadFile(file multipart.File, opt *upload.Opts) (re
 		if opt.FileName != nil {
 			cloudinaryParams.PublicID = upload.CreateCleanFileNameWithExt(*opt.FileName, response.Body.Ext)
 		}
+	} else {
+		//this will generate a unique id and returns it plus the extension
+		cloudinaryParams.PublicID = upload.CreateCleanFileNameWithExt("", response.Body.Ext)
 	}
 	uploadResult, err := u.Cloud.Upload.Upload(ctx, file, cloudinaryParams)
 	if err != nil {
