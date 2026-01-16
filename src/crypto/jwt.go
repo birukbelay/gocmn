@@ -9,10 +9,11 @@ import (
 
 // CustomClaims specifies custom claims
 type CustomClaims struct {
-	SessionId string `json:"session_id"`
-	Role      string `json:"role"`
-	UserId    string `json:"user_id"`
-	CompanyId string `json:"company_id"`
+	SessionId string         `json:"session_id"`
+	Role      string         `json:"role"`
+	UserId    string         `json:"user_id"`
+	CompanyId string         `json:"company_id"`
+	Data      map[string]any `json:"data,omitempty"`
 	jwt.RegisteredClaims
 }
 
