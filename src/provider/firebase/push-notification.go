@@ -94,9 +94,10 @@ func (pns *FirebasePushService) SendToMultipleTokens(ctx context.Context, tokens
 	if len(tokens) == 0 {
 		return nil, fmt.Errorf("no tokens provided")
 	}
+	uniqueTokens := util.MergeArrUniqRes(tokens)
 
 	message := &messaging.MulticastMessage{
-		Tokens: tokens,
+		Tokens: uniqueTokens,
 		Notification: &messaging.Notification{
 			Title:    payload.Title,
 			Body:     payload.Body,
@@ -127,14 +128,14 @@ func (pns *FirebasePushService) SendToMultipleTokens(ctx context.Context, tokens
 		return nil, err
 	}
 
-	log.Printf("Successfully sent push notification to %d tokens. Success count: %d, Failure count: %d",
-		len(tokens), response.SuccessCount, response.FailureCount)
+	// log.Printf("Successfully sent push notification to %d tokens. Success count: %d, Failure count: %d",
+	// 	len(uniqueTokens), response.SuccessCount, response.FailureCount)
 
 	// Log failed tokens for debugging
 	if response.FailureCount > 0 {
 		for i, resp := range response.Responses {
 			if !resp.Success {
-				log.Printf("Failed to send to token %s: %v", tokens[i], resp.Error)
+				logger.LogError(fmt.Sprintf("Failed to send to token %s", tokens[i]), resp.Error)
 			}
 		}
 	}

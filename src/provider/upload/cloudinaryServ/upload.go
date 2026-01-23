@@ -44,7 +44,8 @@ func (u *CloudinaryUpload) UploadFile(file multipart.File, opt *upload.Opts) (re
 	// Upload to Cloudinary
 	ctx := context.Background()
 	cloudinaryParams := uploader.UploadParams{
-		Folder: u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
+		Folder:       u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
+		ResourceType: "auto",
 	}
 	if opt != nil {
 		if opt.FileName != nil {
