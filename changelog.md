@@ -1,5 +1,10 @@
 # change Log
 
+> git tag     # to list the tags
+> git tag -a v1.0 -m "Release version 1.0"
+> git push origin --tags
+> git push origin v1.0
+
 ## 1.1
 
 - major rewrite

@@ -10,6 +10,7 @@ import (
 	"firebase.google.com/go/v4/messaging"
 
 	"github.com/birukbelay/gocmn/src/logger"
+	"github.com/birukbelay/gocmn/src/provider/pushNotification"
 	"github.com/birukbelay/gocmn/src/util"
 )
 
@@ -20,7 +21,7 @@ type FirebasePushService struct {
 }
 
 // NewPushNotificationService creates a new push notification service instance
-func (f *FirebaseServ) NewPushService() (*FirebasePushService, error) {
+func (f *FirebaseServ) NewPushService() (pushNotification.IPushService, error) {
 
 	if f.FirebaseApp == nil {
 		return nil, errors.New("FCM client not initialized")
@@ -43,7 +44,7 @@ func (f *FirebaseServ) NewPushService() (*FirebasePushService, error) {
 }
 
 // SendToToken sends a push notification to a specific device token
-func (pns *FirebasePushService) SendToToken(ctx context.Context, token string, payload NotificationPayload) (*FirebaseSendResponse, error) {
+func (pns *FirebasePushService) SendToToken(ctx context.Context, token string, payload pushNotification.NotificationPayload) (*pushNotification.PushSendResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -81,11 +82,11 @@ func (pns *FirebasePushService) SendToToken(ctx context.Context, token string, p
 	}
 
 	log.Printf("Successfully sent push notification to token %s. Message ID: %s", token, response)
-	return &FirebaseSendResponse{MessageID: response}, nil
+	return &pushNotification.PushSendResponse{MessageID: response}, nil
 }
 
 // SendToMultipleTokens sends a push notification to multiple device tokens, must be upto 500
-func (pns *FirebasePushService) SendToMultipleTokens(ctx context.Context, tokens []string, payload NotificationPayload) (*FirebaseBatchResponse, error) {
+func (pns *FirebasePushService) SendToMultipleTokens(ctx context.Context, tokens []string, payload pushNotification.NotificationPayload) (*pushNotification.PushBatchResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -138,13 +139,13 @@ func (pns *FirebasePushService) SendToMultipleTokens(ctx context.Context, tokens
 		}
 	}
 
-	return &FirebaseBatchResponse{SuccessCount: response.SuccessCount, FailureCount: response.FailureCount,
-		Responses: []*FirebaseSendResponse{{Success: true}},
+	return &pushNotification.PushBatchResponse{SuccessCount: response.SuccessCount, FailureCount: response.FailureCount,
+		Responses: []*pushNotification.PushSendResponse{{Success: true}},
 	}, nil
 }
 
 // SendToTopic sends a push notification to a topic
-func (pns *FirebasePushService) SendToTopic(ctx context.Context, topic string, payload NotificationPayload) (*FirebaseSendResponse, error) {
+func (pns *FirebasePushService) SendToTopic(ctx context.Context, topic string, payload pushNotification.NotificationPayload) (*pushNotification.PushSendResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -182,11 +183,11 @@ func (pns *FirebasePushService) SendToTopic(ctx context.Context, topic string, p
 	}
 
 	log.Printf("Successfully sent push notification to topic %s. Message ID: %s", topic, response)
-	return &FirebaseSendResponse{MessageID: response}, nil
+	return &pushNotification.PushSendResponse{MessageID: response}, nil
 }
 
 // SendDataOnlyMessage sends a data-only message (no notification UI)
-func (pns *FirebasePushService) SendDataOnlyMessage(ctx context.Context, token string, data map[string]string) (*FirebaseSendResponse, error) {
+func (pns *FirebasePushService) SendDataOnlyMessage(ctx context.Context, token string, data map[string]string) (*pushNotification.PushSendResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -206,11 +207,11 @@ func (pns *FirebasePushService) SendDataOnlyMessage(ctx context.Context, token s
 	}
 
 	log.Printf("Successfully sent data-only message to token %s. Message ID: %s", token, response)
-	return &FirebaseSendResponse{MessageID: response}, nil
+	return &pushNotification.PushSendResponse{MessageID: response}, nil
 }
 
 // SubscribeToTopic subscribes device tokens to a topic
-func (pns *FirebasePushService) SubscribeToTopic(ctx context.Context, tokens []string, topic string) (*TopicManagementResponse, error) {
+func (pns *FirebasePushService) SubscribeToTopic(ctx context.Context, tokens []string, topic string) (*pushNotification.TopicManagementResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -223,7 +224,7 @@ func (pns *FirebasePushService) SubscribeToTopic(ctx context.Context, tokens []s
 
 	log.Printf("Successfully subscribed %d tokens to topic %s. Success count: %d, Failure count: %d",
 		len(tokens), topic, response.SuccessCount, response.FailureCount)
-	mapped, err := util.MarshalToStruct[TopicManagementResponse](response)
+	mapped, err := util.MarshalToStruct[pushNotification.TopicManagementResponse](response)
 	if err != nil {
 		log.Printf("Error subscribing tokens to topic %s: %v", topic, err)
 		return nil, err
@@ -232,7 +233,7 @@ func (pns *FirebasePushService) SubscribeToTopic(ctx context.Context, tokens []s
 }
 
 // UnsubscribeFromTopic unsubscribes device tokens from a topic
-func (pns *FirebasePushService) UnsubscribeFromTopic(ctx context.Context, tokens []string, topic string) (*TopicManagementResponse, error) {
+func (pns *FirebasePushService) UnsubscribeFromTopic(ctx context.Context, tokens []string, topic string) (*pushNotification.TopicManagementResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -246,7 +247,7 @@ func (pns *FirebasePushService) UnsubscribeFromTopic(ctx context.Context, tokens
 	log.Printf("Successfully unsubscribed %d tokens from topic %s. Success count: %d, Failure count: %d",
 		len(tokens), topic, response.SuccessCount, response.FailureCount)
 
-	mapped, err := util.MarshalToStruct[TopicManagementResponse](response)
+	mapped, err := util.MarshalToStruct[pushNotification.TopicManagementResponse](response)
 	if err != nil {
 		log.Printf("Error subscribing tokens to topic %s: %v", topic, err)
 		return nil, err
@@ -285,7 +286,7 @@ func intPtr(i int) *int {
 }
 
 // SendToCondition sends a push notification based on topic conditions
-func (pns *FirebasePushService) SendToCondition(ctx context.Context, condition string, payload NotificationPayload) (*FirebaseSendResponse, error) {
+func (pns *FirebasePushService) SendToCondition(ctx context.Context, condition string, payload pushNotification.NotificationPayload) (*pushNotification.PushSendResponse, error) {
 	if pns.client == nil {
 		return nil, fmt.Errorf("FCM client not initialized")
 	}
@@ -328,7 +329,7 @@ func (pns *FirebasePushService) SendToCondition(ctx context.Context, condition s
 	}
 
 	log.Printf("Successfully sent condition-based notification. Message ID: %s", response)
-	return &FirebaseSendResponse{MessageID: response}, nil
+	return &pushNotification.PushSendResponse{MessageID: response}, nil
 }
 
 // validateCondition validates FCM condition syntax

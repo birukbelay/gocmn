@@ -1,14 +1,14 @@
-package firebase
+package pushNotification
 
-type FirebaseSendResponse struct {
+type PushSendResponse struct {
 	Success   bool
 	MessageID string
 	Error     error
 }
-type FirebaseBatchResponse struct {
+type PushBatchResponse struct {
 	SuccessCount int
 	FailureCount int
-	Responses    []*FirebaseSendResponse
+	Responses    []*PushSendResponse
 }
 
 // NotificationPayload represents the structure of a push notification
