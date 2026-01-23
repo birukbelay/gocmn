@@ -8,8 +8,8 @@ type EmailFields struct {
 }
 
 type EmailSender interface {
-	SendEmailTmpl(fields EmailFields, templateStruct any) error
 	SendEmail(to, subject string, templatePath EmailTemplates, templateStruct any) error
+	SendEmailTmpl(fields EmailFields, templateStruct any) error
 	//TODO: SendVerificationCode
 }
 

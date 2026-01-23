@@ -47,3 +47,58 @@ func Reverse[T any](arr []T) []T {
 	}
 	return arr
 }
+
+func Merge2ArrUniqRes[T comparable](a, b []T) []T {
+	seen := make(map[T]bool)
+	result := make([]T, 0, len(a)+len(b))
+
+	// Add all elements from 'a'
+	for _, v := range a {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+
+	// Add elements from 'b' only if not already seen
+	for _, v := range b {
+		if !seen[v] {
+			seen[v] = true
+			result = append(result, v)
+		}
+	}
+
+	return result
+}
+
+func MergeArrUniqRes[T comparable](vals ...[]T) []T {
+	seen := make(map[T]bool)
+	result := make([]T, 0)
+
+	// Add all elements from 'a'
+	for _, arr := range vals {
+		for _, v := range arr {
+
+			if !seen[v] {
+				seen[v] = true
+				result = append(result, v)
+			}
+		}
+	}
+	return result
+}
+
+func MergeArrAll[T comparable](vals ...[]T) []T {
+
+	result := make([]T, 0)
+
+	// Add all elements from 'a'
+	for _, arr := range vals {
+		for _, v := range arr {
+
+			result = append(result, v)
+
+		}
+	}
+	return result
+}

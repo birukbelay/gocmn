@@ -25,6 +25,7 @@ func (s *Set) Size() int {
 	return len(s.m)
 }
 
+// because vals are bools, we only have function to get keys
 func (s *Set) GetKeys() []string {
 	keys := make([]string, 0, len(s.m))
 	for k, v := range s.m {
@@ -33,4 +34,16 @@ func (s *Set) GetKeys() []string {
 		}
 	}
 	return keys
+}
+
+func (s *Set) AddVals(value ...string) {
+	for _, v := range value {
+		s.m[v] = true
+	}
+}
+
+func (s *Set) RemoveVals(values ...string) {
+	for _, v := range values {
+		delete(s.m, v)
+	}
 }

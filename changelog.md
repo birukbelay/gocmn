@@ -14,3 +14,9 @@
 - [x] add getKeys and getValues to the util/set fucntions
 - [x] add clause.Returning{} for the add function
 - [x] add the error to the huma Greturn funciton, which takes ...err params
+
+### 1.1.6
+
+- added add multiple vals to set and remove multiple vals from set
+- added more colors and functions to logger.
+- added firebase service with push notification service
