@@ -8,6 +8,7 @@ import (
 	"github.com/redis/go-redis/v9"
 
 	conf "github.com/birukbelay/gocmn/src/config"
+	"github.com/birukbelay/gocmn/src/logger"
 	"github.com/birukbelay/gocmn/src/provider/db"
 )
 
@@ -23,7 +24,14 @@ func NewRedis(config *conf.KeyValConfig) (*RedisService, error) {
 		DB:       config.KVDbName,   // use default DB
 		Username: config.KVUsername,
 	})
+	pong, rErr := rdb.Ping(context.Background()).Result()
+	if rErr != nil {
+		logger.LogTrace("redis connection error", rErr.Error())
+		return nil, rErr
+	}
+	logger.LogError("Reddis success", pong)
 	return &RedisService{RedisClient: rdb}, nil
+
 }
 
 // Exists implements providers.KeyValServ.

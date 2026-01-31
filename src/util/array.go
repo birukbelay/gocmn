@@ -1,5 +1,7 @@
 package util
 
+import "github.com/lib/pq"
+
 func ElementExists[T comparable](element T, arr ...T) bool {
 	for _, v := range arr {
 		if v == element {
@@ -101,4 +103,28 @@ func MergeArrAll[T comparable](vals ...[]T) []T {
 		}
 	}
 	return result
+}
+func ElementExistsInStringArray(email string, arr pq.StringArray) bool {
+	for _, v := range arr {
+		if v == email {
+			return true
+		}
+	}
+	return false
+}
+
+func UniqElements[T comparable](baseArr, arrWithMoreItems []T) []T {
+	seen := make(map[T]bool, len(baseArr))
+	for _, v := range baseArr {
+		seen[v] = true
+	}
+
+	var added []T
+	for _, v := range arrWithMoreItems {
+		if _, ok := seen[v]; !ok {
+			added = append(added, v)
+		}
+	}
+
+	return added
 }

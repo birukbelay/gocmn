@@ -56,3 +56,16 @@ type LocalFileConfig struct {
 	ImageUploadPath string `koanf:"IMAGE_UPLOAD_PATH"`
 	MaxUploadSize   string `koanf:"MAX_UPLOAD_SIZE"`
 }
+
+type FirebaseConfig struct {
+	Type                    string `koanf:"FIREBASE_TYPE"`
+	ProjectID               string `koanf:"FIREBASE_PROJECT_ID"`
+	PrivateKey              string `koanf:"FIREBASE_PRIVATE_KEY"`
+	PrivateKeyID            string `koanf:"FIREBASE_PRIVATE_KEY_ID"`
+	ClientEmail             string `koanf:"FIREBASE_CLIENT_EMAIL"`
+	ClientID                string `koanf:"FIREBASE_CLIENT_ID"`
+	AuthURI                 string `koanf:"FIREBASE_AUTH_URI"`
+	TokenUrl                string `koanf:"FIREBASE_TOKEN_URI"`
+	AuthProviderX509CertUrl string `koanf:"FIREBASE_AUTH_PROVIDER_X509_CERT_URL"`
+	ClientX509CertUrl       string `koanf:"FIREBASE_CLIENT_X509_CERT_URL"`
+}
