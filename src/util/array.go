@@ -91,15 +91,11 @@ func MergeArrUniqRes[T comparable](vals ...[]T) []T {
 }
 
 func MergeArrAll[T comparable](vals ...[]T) []T {
-
 	result := make([]T, 0)
-
 	// Add all elements from 'a'
 	for _, arr := range vals {
 		for _, v := range arr {
-
 			result = append(result, v)
-
 		}
 	}
 	return result

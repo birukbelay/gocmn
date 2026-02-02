@@ -24,13 +24,16 @@ func NewRedis(config *conf.KeyValConfig) (*RedisService, error) {
 		DB:       config.KVDbName,   // use default DB
 		Username: config.KVUsername,
 	})
-	pong, rErr := rdb.Ping(context.Background()).Result()
-	if rErr != nil {
-		logger.LogTrace("redis connection error", rErr.Error())
-		return nil, rErr
+	if rdb != nil {
+		pong, rErr := rdb.Ping(context.Background()).Result()
+		if rErr != nil {
+			logger.LogTrace("redis connection error", rErr.Error())
+			return nil, rErr
+		}
+		logger.LogTrace("Reddis success", pong)
+		return &RedisService{RedisClient: rdb}, nil
 	}
-	logger.LogError("Reddis success", pong)
-	return &RedisService{RedisClient: rdb}, nil
+	return nil, fmt.Errorf("redis client is nil")
 
 }
 
