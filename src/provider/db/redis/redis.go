@@ -24,16 +24,24 @@ func NewRedis(config *conf.KeyValConfig) (*RedisService, error) {
 		DB:       config.KVDbName,   // use default DB
 		Username: config.KVUsername,
 	})
+	rds := RedisService{RedisClient: rdb}
 	if rdb != nil {
 		pong, rErr := rdb.Ping(context.Background()).Result()
 		if rErr != nil {
 			logger.LogError("redis connection error", rErr.Error())
-			return nil, rErr
+			return &rds, rErr
+		} else {
+			logger.LogInfo("Redis success", pong)
+			err := rdb.Set(context.TODO(), "test:1:2:3", time.Now().UnixMilli(), 0)
+			if err != nil {
+				logger.LogError("redis set error", err)
+			} else {
+				logger.LogTrace("redis set success", "")
+			}
 		}
-		logger.LogInfo("Redis success", pong)
-		return &RedisService{RedisClient: rdb}, nil
+		return &rds, nil
 	}
-	return nil, fmt.Errorf("redis client is nil")
+	return &rds, fmt.Errorf("redis client is nil")
 }
 
 // Exists implements providers.KeyValServ.

@@ -114,13 +114,11 @@ func UniqElements[T comparable](baseArr, arrWithMoreItems []T) []T {
 	for _, v := range baseArr {
 		seen[v] = true
 	}
-
 	var added []T
 	for _, v := range arrWithMoreItems {
 		if _, ok := seen[v]; !ok {
 			added = append(added, v)
 		}
 	}
-
 	return added
 }
