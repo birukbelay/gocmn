@@ -27,6 +27,15 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	query := u.WithContext(ctx)
 	//select, preload and debug
 	query = DebugPreloadSelect(query, options, pagi.Select)
+	//tags
+	query = searchTags(query, pagi.Tags)
+	query = addAllOfTags(query, pagi.AllTags)
+	query = addAnyOfTags(query, pagi.AnyTags)
+	//start & end date
+	query, err := addStartEndDate(query, pagi.StartDate, pagi.EndDate)
+	if err != nil {
+		return dtos.PInternalErrS[[]T](err.Error()), err
+	}
 
 	//================.  Authorization Queries. ==========
 	if options != nil {
@@ -39,14 +48,6 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 				query = query.Where(where.Query, where.Args...)
 			}
 		}
-	}
-
-	//tags
-	_ = searchTags(query, pagi.Tags)
-	//start & end date
-	_, err := addStartEndDate(query, pagi.StartDate, pagi.EndDate)
-	if err != nil {
-		return dtos.PInternalErrS[[]T](err.Error()), err
 	}
 	//text search & like queries
 	query = addSearchFilters(query, pagi)

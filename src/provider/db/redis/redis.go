@@ -14,6 +14,7 @@ import (
 
 type RedisService struct {
 	RedisClient *redis.Client
+	RedisErr    error
 }
 
 // Exists implements providers.KeyValServ.
@@ -24,24 +25,28 @@ func NewRedis(config *conf.KeyValConfig) (*RedisService, error) {
 		DB:       config.KVDbName,   // use default DB
 		Username: config.KVUsername,
 	})
-	rds := RedisService{RedisClient: rdb}
 	if rdb != nil {
 		pong, rErr := rdb.Ping(context.Background()).Result()
 		if rErr != nil {
 			logger.LogError("redis connection error", rErr.Error())
-			return &rds, rErr
-		} else {
-			logger.LogInfo("Redis success", pong)
-			err := rdb.Set(context.TODO(), "test:1:2:3", time.Now().UnixMilli(), 0)
-			if err != nil {
-				logger.LogError("redis set error", err)
-			} else {
-				logger.LogTrace("redis set success", "")
-			}
+			return &RedisService{RedisClient: rdb, RedisErr: rErr}, rErr
 		}
-		return &rds, nil
+		logger.LogInfo("Redis success", pong)
+		return &RedisService{RedisClient: rdb}, nil
 	}
-	return &rds, fmt.Errorf("redis client is nil")
+	return &RedisService{RedisClient: rdb, RedisErr: fmt.Errorf("redis client is nil")}, fmt.Errorf("redis client is nil")
+}
+func (r *RedisService) Close() error {
+	return r.RedisClient.Close()
+}
+func (r *RedisService) TestSet() {
+	res := r.RedisClient.Set(context.TODO(), "test:1:2:3", time.Now().UnixMilli(), 0)
+	if res.Err() != nil {
+		logger.LogError("redis set error", res.Err().Error())
+		return
+	}
+	logger.LogInfo("redis set result", res.String())
+
 }
 
 // Exists implements providers.KeyValServ.

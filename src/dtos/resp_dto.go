@@ -43,18 +43,20 @@ type CursorStruct struct {
 }
 
 type PaginationInput struct {
-	Limit   int    `default:"25" query:"_limit"`
-	Page    int    `default:"1"  query:"_page"`
-	SortDir string ` query:"_sort_dir" enum:"asc,desc" default:"desc"`
-	Cursor  string ` query:"_cursor"`
+	Limit  int    `default:"25" query:"_limit"`
+	Page   int    `default:"1"  query:"_page"`
+	Cursor string ` query:"_cursor"`
+	//
+	SortDir     string   ` query:"_sort_dir" enum:"asc,desc" default:"desc"`
+	AllowedSort []string `query:"-"  `
 
 	//fields that are overridden on api side, by default
 	Select []string `query:"-"`
 	SortBy string   `query:"-" ` //we dont use this because we override it with the models Sort
 
 	//fields that are not allowed on api side, but used internally
-	ColName  string   `query:"-"`
-	ColNames []string `query:"-"`
+	PrefixColLike string   `query:"-" doc:"used for prefix like query"`
+	TxtSearchCols []string `query:"-"  doc:"used for text search"`
 	//fields that need to be set on the api side to be used
 	Like  string `query:"-"` //set `ColName`` on api side to use this
 	Query string `query:"-"` //set `ColNames` on api side to use this
@@ -62,9 +64,10 @@ type PaginationInput struct {
 	StartDate string `query:"-"`
 	EndDate   string `query:"-"` //todo, these should also be allowed on api side
 
-	//unused fields
-	Tags        []string `query:"-"`
-	AllowedSort []string `query:"-"  `
+	//tag fields
+	Tags    []string `query:"-"`
+	AllTags []string `query:"all_tags"`
+	AnyTags []string `query:"any_tags"`
 }
 
 type LocResp[T any] struct {

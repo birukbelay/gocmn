@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 
 	"github.com/birukbelay/gocmn/src/dtos"
@@ -35,16 +36,39 @@ func addStartEndDate(query *gorm.DB, startDate, endDate string) (*gorm.DB, error
 func addSearchFilters(query *gorm.DB, pagi dtos.PaginationInput) (q *gorm.DB) {
 	//=================================  Prefix search Matching ===============
 	//for indexed name matching, eg: `name LIKE abe%`
-	if pagi.Like != "" && pagi.ColName != "" {
-		query = query.Where(fmt.Sprintf("%s LIKE ?", pagi.ColName), pagi.Like+"%")
+	if pagi.Like != "" && pagi.PrefixColLike != "" {
+		query = query.Where(fmt.Sprintf("%s LIKE ?", pagi.PrefixColLike), pagi.Like+"%")
 	}
 	//=============  For text search, WARNING! YOU will need to index the cols for text serarch ======
-	if pagi.Query != "" && len(pagi.ColNames) > 0 {
-		searchVector := fmt.Sprintf("to_tsvector('english', %s)", strings.Join(pagi.ColNames, " || ' ' || "))
-		query = query.Where(searchVector+" @@ to_tsquery(?)", pagi.Query+":*")
-
+	if pagi.Query != "" && len(pagi.TxtSearchCols) > 0 {
+		searchVector := fmt.Sprintf("to_tsvector('english', %s)", strings.Join(pagi.TxtSearchCols, " || ' ' || "))
+		query = query.Where(searchVector+" @@ to_tsquery(?)", ToTsQuery(pagi.Query))
 	}
 	return query
+}
+func ToTsQuery(input string) string {
+	// Remove dangerous characters
+	cleaned := strings.Map(func(r rune) rune {
+		switch r {
+		case ':', '!', '&', '|', '(', ')', '<', '>', '\'', '\\':
+			return -1 // remove
+		}
+		return r
+	}, input)
+
+	// Split into words
+	words := strings.Fields(cleaned)
+	if len(words) == 0 {
+		return ""
+	}
+
+	// Add prefix operator
+	for i, w := range words {
+		words[i] = w + ":*"
+	}
+
+	// Join with AND (you can use OR: "|")
+	return strings.Join(words, " & ")
 }
 func searchTags(query *gorm.DB, tags []string) (q *gorm.DB) {
 	if len(tags) > 0 {
@@ -52,6 +76,20 @@ func searchTags(query *gorm.DB, tags []string) (q *gorm.DB) {
 	}
 	return query
 }
+func addAnyOfTags(query *gorm.DB, tags []string) (q *gorm.DB) {
+	if len(tags) > 0 {
+		query = query.Where("tags && ?", pq.Array(tags))
+	}
+	return query
+}
+func addAllOfTags(query *gorm.DB, tags []string) (q *gorm.DB) {
+	if len(tags) > 0 {
+		query = query.Where("tags @> ?", pq.Array(tags))
+	}
+	return query
+}
+
+// =====================  For Preload, Debug and Select =======================
 func DebugPreloadSelect(query *gorm.DB, options *Opt, sel []string) (q *gorm.DB) {
 	if options != nil {
 		if options.Debug {
