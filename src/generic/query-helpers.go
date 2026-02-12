@@ -117,3 +117,16 @@ func AddInQueries(query *gorm.DB, options *Opt) (q *gorm.DB) {
 
 	return query
 }
+func AddNotInQueries(query *gorm.DB, options *Opt) (q *gorm.DB) {
+	if options != nil {
+		if len(options.NotInQueries) > 0 {
+			for n, v := range options.InQueries {
+				if len(v) > 0 {
+					query = query.Where(fmt.Sprintf("%s NOT IN (?)", n), v)
+				}
+			}
+		}
+	}
+
+	return query
+}

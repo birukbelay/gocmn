@@ -15,6 +15,7 @@ type Opt struct {
 	Preloads      []string
 	NoLimit       bool
 	InQueries     KeyArr
+	NotInQueries  KeyArr
 	UpdateColumns []string
 	Columns       []clause.Column
 	AuthKey       *string

@@ -37,7 +37,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 		return dtos.PInternalErrS[[]T](err.Error()), err
 	}
 
-	//================.  Authorization Queries. ==========
+	//========== .  Authorization Queries. ==========
 	if options != nil {
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
@@ -52,6 +52,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	//text search & like queries
 	query = addSearchFilters(query, pagi)
 	query = AddInQueries(query, options)
+	query = AddNotInQueries(query, options)
 
 	//use a differnet session after this
 	query = query.Session(&gorm.Session{})
