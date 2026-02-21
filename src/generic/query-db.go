@@ -27,6 +27,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	query := u.WithContext(ctx)
 	//select, preload and debug
 	query = DebugPreloadSelect(query, options, pagi.Select)
+	query = query.Model(lst).Where(filter)
 	//tags
 	query = searchTags(query, pagi.Tags)
 	query = addAllOfTags(query, pagi.AllTags)
@@ -56,7 +57,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 
 	//use a differnet session after this
 	query = query.Session(&gorm.Session{})
-	resp := query.Model(lst).Where(filter).Limit(limit + 1).Order(orderString).Offset(page * limit).Find(&lst)
+	resp := query.Limit(limit + 1).Order(orderString).Offset(page * limit).Find(&lst)
 	if resp.Error != nil {
 		log.Err(resp.Error).Msg("fetch Error")
 		return dtos.PInternalErrS[[]T](resp.Error.Error()), resp.Error
