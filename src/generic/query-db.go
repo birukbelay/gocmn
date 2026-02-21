@@ -137,6 +137,7 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 	result := new(T)
 	query := u.WithContext(ctx)
 	query = DebugPreloadSelect(query, options, nil)
+	query = query.Model(result).Where(filter)
 	if options != nil {
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
@@ -149,8 +150,7 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 		}
 	}
 
-	query = query.Model(result).Where(filter)
-	resp := query.First(result)
+	resp := query.Take(result)
 	if resp.Error != nil {
 		if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
 			return dtos.NotFoundErrS[T](resp.Error.Error()), resp.Error
