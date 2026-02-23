@@ -5,6 +5,7 @@ import (
 	"mime/multipart"
 	"path/filepath"
 
+	"github.com/cloudinary/cloudinary-go/v2/api"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 
 	resp "github.com/birukbelay/gocmn/src/dtos"
@@ -30,6 +31,9 @@ func (u *CloudinaryUpload) UploadFileHeader(file *multipart.FileHeader, opt *upl
 		Folder:       u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
 		PublicID:     upload.CreateCleanFileNameWithExt(file_name, response.Body.Ext),
 		ResourceType: "auto",
+		AccessControl: api.AccessControl{
+			{AccessType: "anonymous"},
+		},
 	}
 	// Open the file
 	f, err := file.Open()
