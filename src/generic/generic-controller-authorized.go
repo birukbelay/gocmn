@@ -76,6 +76,23 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) AuthGetOneByFilter(ctx context.
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, &Opt{AuthKey: &uh.AuthKey, AuthVal: &v})
 	return dtos.HumaReturnG(resp, err)
 }
+
+func (uh *IGenericAuthController[T, C, U, F, Q]) AuthGetOneByQuery(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	val := *query
+	filter, _, opt := val.GetFilter()
+	v, ok := ctx.Value(uh.AuthValGetter).(string)
+	if !ok {
+		return nil, huma.NewError(http.StatusUnauthorized, "The Token is Not Correct Form")
+	}
+	if opt == nil {
+		opt = &Opt{AuthKey: &uh.AuthKey, AuthVal: &v}
+	} else {
+		opt.AuthKey = &uh.AuthKey
+		opt.AuthVal = &v
+	}
+	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, opt)
+	return dtos.HumaReturnG(resp, err)
+}
 func (uh *IGenericAuthController[T, C, U, F, Q]) AuthGetOneById(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	v, ok := ctx.Value(uh.AuthValGetter).(string)
 	if !ok {

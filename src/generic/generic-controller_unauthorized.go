@@ -31,6 +31,12 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneByFilter(ctx contex
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, nil)
 	return dtos.HumaReturnG(resp, err)
 }
+func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneByQuery(ctx context.Context, query *Q) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	val := *query
+	filter, _, opt := val.GetFilter()
+	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, opt)
+	return dtos.HumaReturnG(resp, err)
+}
 func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneById(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbGetOneByID[T](uh.GormConn, ctx, filter.ID, nil)
 	return dtos.HumaReturnG(resp, err)
