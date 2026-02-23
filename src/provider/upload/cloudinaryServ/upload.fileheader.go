@@ -31,6 +31,8 @@ func (u *CloudinaryUpload) UploadFileHeader(file *multipart.FileHeader, opt *upl
 		Folder:       u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
 		PublicID:     upload.CreateCleanFileNameWithExt(file_name, response.Body.Ext),
 		ResourceType: "auto",
+		Type:         "upload",
+
 		AccessControl: api.AccessControl{
 			{AccessType: "anonymous"},
 		},
@@ -48,6 +50,11 @@ func (u *CloudinaryUpload) UploadFileHeader(file *multipart.FileHeader, opt *upl
 	if err != nil {
 		return resp.BadReqRespMsgCode[*upload.UploadDto](err.Error(), resp_const.UpdateSuccess), err
 	}
+	// signedURL, err := u.Cloud..URL.Signed(uploadResult.PublicID, &url.Configuration{
+	// 	ResourceType: uploadResult.ResourceType,
+	// 	Secure:       true,
+	// 	SignURL:      true,
+	// })
 
 	// Populate response
 	response.Body.Name = filepath.Base(uploadResult.PublicID) // e.g., "random123"
