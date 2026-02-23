@@ -27,8 +27,9 @@ func (u *CloudinaryUpload) UploadFileHeader(file *multipart.FileHeader, opt *upl
 		}
 	}
 	cloudinaryParams := uploader.UploadParams{
-		Folder:   u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
-		PublicID: upload.CreateCleanFileNameWithExt(file_name, response.Body.Ext),
+		Folder:       u.Env.CloudinaryFolder, // Optional: e.g., "uploads" from config
+		PublicID:     upload.CreateCleanFileNameWithExt(file_name, response.Body.Ext),
+		ResourceType: "auto",
 	}
 	// Open the file
 	f, err := file.Open()
