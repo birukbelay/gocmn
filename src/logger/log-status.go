@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"path/filepath"
 	"runtime"
 )
@@ -17,6 +18,7 @@ func LogInfo(name string, output any) {
 	n := runtime.Callers(2, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -32,6 +34,7 @@ func LogError(name string, output interface{}) {
 	n := runtime.Callers(2, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Error(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -50,6 +53,7 @@ func LogTraceNOp(name string, output any, num int, opt Opt) {
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -69,6 +73,7 @@ func LogTraceRop(name string, output interface{}, num int, opt Opt) (file, funct
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	fileName := filepath.Base(frame.File)
 	functionName := filepath.Base(frame.Function)

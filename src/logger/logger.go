@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"path/filepath"
 	"runtime"
 )
@@ -14,9 +15,11 @@ func colorize(color Color, message string) {
 func colorizeSameLine(color Color, message string) {
 	fmt.Print(string(color), message, string(ColorReset))
 }
+
 type Opt struct {
 	Color Color
 }
+
 // LogTrace logs only value with color
 func LogTrace(name string, output interface{}) {
 	// PrintUi("=", 40, false)
@@ -27,6 +30,7 @@ func LogTrace(name string, output interface{}) {
 	n := runtime.Callers(2, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -42,6 +46,7 @@ func LogTraceN(name string, output interface{}, num int) {
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -57,6 +62,7 @@ func LogTraceR(name string, output interface{}, num int) (file, function string)
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	fileName := filepath.Base(frame.File)
 	functionName := filepath.Base(frame.Function)
@@ -74,6 +80,7 @@ func LogColor(name string, output interface{}, color Color) {
 	n := runtime.Callers(2, pc)
 	frames := runtime.CallersFrames(pc[:n])
 	frame, _ := frames.Next()
+	slog.Info(name, slog.Any("output", output))
 	log.Printf("%s:%d\n", frame.File, frame.Line)
 	// PrintUi("=", 40, false)
 
@@ -85,5 +92,4 @@ func LogVal(name string, output interface{}, color Color) {
 	colorizeSameLine(ColorGreen, name)
 	o := fmt.Sprintf("=| %v", output)
 	colorize(color, o)
-
 }

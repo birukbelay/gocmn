@@ -38,7 +38,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 		return dtos.PInternalErrS[[]T](err.Error()), err
 	}
 
-	//========== .  Authorization Queries. ==========
+	//========== .  Authorization & where Queries. ==========
 	if options != nil {
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
@@ -69,7 +69,7 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	}
 
 	var count int64
-	cnt := query.Model(lst).Where(filter).Count(&count)
+	cnt := query.Count(&count)
 	if cnt.Error != nil {
 		return dtos.PInternalErrS[[]T](cnt.Error.Error()), cnt.Error
 	}
@@ -139,6 +139,8 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 	query := u.WithContext(ctx)
 	query = DebugPreloadSelect(query, options, nil)
 	query = query.Model(result).Where(filter)
+
+	//========== .  Authorization & where Queries. ==========
 	if options != nil {
 		if options.AuthKey != nil && options.AuthVal != nil {
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
@@ -253,6 +255,7 @@ func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (
 	var mdl T
 	var count int64
 	cntQuery := u.WithContext(ctx)
+
 	if options != nil {
 		if options.Debug {
 			cntQuery = cntQuery.Debug()
@@ -262,8 +265,15 @@ func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (
 			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
 			cntQuery = cntQuery.Where(queryStr, options.AuthVal)
 		}
+		if len(options.WhereQuery) > 0 {
+			for _, where := range options.WhereQuery {
+				cntQuery = cntQuery.Where(where.Query, where.Args...)
+			}
+		}
 
 	}
+	cntQuery = AddInQueries(cntQuery, options)
+	cntQuery = AddNotInQueries(cntQuery, options)
 	cnt := cntQuery.Model(mdl).Where(filter).Count(&count)
 	if cnt.Error != nil {
 		return dtos.InternalErrMS[int64](cnt.Error.Error()), cnt.Error
