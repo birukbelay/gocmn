@@ -1,38 +1,14 @@
 package logger
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"runtime"
 )
 
-func GetDef(opt *Opt, keyColor, valColor Color, ctx context.Context) (num int, conxt context.Context, keyClr Color, valClr Color) {
-	num = 2
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	if opt != nil {
-		if opt.Num != 0 {
-			num = opt.Num
-		}
-		if opt.Ctx != nil {
-			ctx = opt.Ctx
-		}
-		if opt.Color != "" {
-			keyColor = opt.Color
-		}
-		if opt.ValCol != "" {
-			valColor = opt.ValCol
-		}
-	}
-	return num, ctx, keyColor, valColor
-}
-
 // InfoCtx logs info with context
-func InfoCtx(ctx context.Context, name string, output any, opt *Opt) {
-	num, ctx, keyColor, valColor := GetDef(opt, ColorCyan, ColorBlue, ctx)
+func Info(name string, output any, opt *Opt) {
+	num, ctx, keyColor, valColor := GetDef(opt, ColorCyan, ColorBlue, nil)
 
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(num, pc)
@@ -52,8 +28,8 @@ func InfoCtx(ctx context.Context, name string, output any, opt *Opt) {
 }
 
 // ErrorCtx logs error with context
-func ErrorCtx(ctx context.Context, name string, output any, opt *Opt) {
-	num, ctx, keyColor, valColor := GetDef(opt, ColorMagenta, ColorYellow, ctx)
+func Error(name string, output any, opt *Opt) {
+	num, ctx, keyColor, valColor := GetDef(opt, ColorMagenta, ColorYellow, nil)
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
@@ -73,8 +49,8 @@ func ErrorCtx(ctx context.Context, name string, output any, opt *Opt) {
 }
 
 // WarnCtx logs warning with context
-func WarnCtx(ctx context.Context, name string, output any, opt *Opt) {
-	num, ctx, keyColor, valColor := GetDef(opt, ColorYellow, ColorMagenta, ctx)
+func Warn(name string, output any, opt *Opt) {
+	num, ctx, keyColor, valColor := GetDef(opt, ColorYellow, ColorMagenta, nil)
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
@@ -94,8 +70,8 @@ func WarnCtx(ctx context.Context, name string, output any, opt *Opt) {
 }
 
 // DebugCtx logs debug with context
-func DebugCtx(ctx context.Context, name string, output any, opt *Opt) {
-	num, ctx, keyColor, valColor := GetDef(opt, ColorBlue, ColorMagenta, ctx)
+func Debug(name string, output any, opt *Opt) {
+	num, ctx, keyColor, valColor := GetDef(opt, ColorBlue, ColorMagenta, nil)
 	pc := make([]uintptr, 15)
 	n := runtime.Callers(num, pc)
 	frames := runtime.CallersFrames(pc[:n])
