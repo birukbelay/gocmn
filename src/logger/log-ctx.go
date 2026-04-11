@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"runtime"
 )
@@ -50,7 +49,7 @@ func InfoCtx(ctx context.Context, name string, output any, opt *Opt) {
 	}
 
 	slog.InfoContext(ctx, coloredName, slogArgs...)
-	log.Printf("%s:%d\n", frame.File, frame.Line)
+	// log.Printf("%s:%d\n", frame.File, frame.Line)
 }
 
 // ErrorCtx logs error with context
@@ -71,7 +70,7 @@ func ErrorCtx(ctx context.Context, name string, output any, opt *Opt) {
 	}
 
 	slog.ErrorContext(ctx, coloredName, slogArgs...)
-	log.Printf("%s:%d\n", frame.File, frame.Line)
+	// log.Printf("%s:%d\n", frame.File, frame.Line)
 }
 
 // WarnCtx logs warning with context
@@ -92,7 +91,7 @@ func WarnCtx(ctx context.Context, name string, output any, opt *Opt) {
 	}
 
 	slog.WarnContext(ctx, coloredName, slogArgs...)
-	log.Printf("%s:%d\n", frame.File, frame.Line)
+	// log.Printf("%s:%d\n", frame.File, frame.Line)
 }
 
 // DebugCtx logs debug with context
@@ -113,5 +112,5 @@ func DebugCtx(ctx context.Context, name string, output any, opt *Opt) {
 	}
 
 	slog.DebugContext(ctx, coloredName, slogArgs...)
-	log.Printf("%s:%d\n", frame.File, frame.Line)
+	// log.Printf("%s:%d\n", frame.File, frame.Line)
 }
