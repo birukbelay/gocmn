@@ -5,14 +5,14 @@ type Color string
 const (
 	ColorBlack  Color = "\u001b[30m"
 	ColorRed    Color = "\u001b[31m"
-	ColorGreen        = "\u001b[32m"
-	ColorYellow       = "\u001b[33m"
-	ColorBlue         = "\u001b[34m"
+	ColorGreen  Color = "\u001b[32m"
+	ColorYellow Color = "\u001b[33m"
+	ColorBlue   Color = "\u001b[34m"
 
 	ColorMagenta Color = "\u001b[35m"
 	ColorCyan    Color = "\u001b[36m"
 	ColorWhite   Color = "\u001b[37m"
-	ColorReset         = "\u001b[0m"
+	ColorReset   Color = "\u001b[0m"
 )
 
 // BRIGHT COLORS
@@ -38,3 +38,7 @@ const (
 	BgCyan    Color = "\u001b[46m"
 	BgWhite   Color = "\u001b[47m"
 )
+
+func (c Color) S() string {
+	return string(c)
+}
