@@ -21,6 +21,7 @@ type Opt struct {
 	AuthKey       *string
 	AuthVal       *string
 	WhereQuery    []WhereStr
+	OrderExp      any
 }
 type WhereStr struct {
 	Query interface{}

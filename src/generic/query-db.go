@@ -56,8 +56,13 @@ func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, p
 	query = AddNotInQueries(query, options)
 
 	//use a differnet session after this
+	if options != nil && options.OrderExp != nil {
+		query = query.Order(options.OrderExp)
+	} else {
+		query = query.Order(orderString)
+	}
 	query = query.Session(&gorm.Session{})
-	resp := query.Limit(limit + 1).Order(orderString).Offset(page * limit).Find(&lst)
+	resp := query.Limit(limit + 1).Offset(page * limit).Find(&lst)
 	if resp.Error != nil {
 		log.Err(resp.Error).Msg("fetch Error")
 		return dtos.PInternalErrS[[]T](resp.Error.Error()), resp.Error
