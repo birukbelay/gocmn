@@ -25,7 +25,11 @@ type FiberServer struct {
 func CreateFiber(host, port string) *FiberServer {
 
 	app := fiber.New()
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "*",
+		AllowMethods: "*",
+	}))
 
 	app.Get("/fiber", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")

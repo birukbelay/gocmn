@@ -17,8 +17,9 @@ import (
 	"github.com/birukbelay/gocmn/src/util"
 )
 
-// ==============================================   Fetch Many Operations ================
-// ========================================================================================
+// ==============================================   Fetch Many Operations ================|
+//                                                                                        |
+//========================================================================================|
 
 func DbFetchManyWithOffset[T any](u *gorm.DB, ctx context.Context, filter any, pagi dtos.PaginationInput, options *Opt) (dtos.PResp[[]T], error) {
 	orderedBy, sortDir, limit, page := util.GetPagiValues(pagi)
@@ -133,8 +134,9 @@ func DbFetchManyWithCursor[T any](u *gorm.DB, ctx context.Context, filter any, p
 	return dtos.ReturnCursorPaginatedS(newDataLst, cursor, count, resp.RowsAffected), nil
 }
 
-// ==============================================   Single Operations ================
-//========================================================================================
+// ==============================================   Single Operations ====================|
+//                                                                                        |
+//========================================================================================|
 
 func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
@@ -166,94 +168,11 @@ func DbGetOne[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) 
 		//cmn.LogTrace("the error is", resp)
 		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
 	}
-	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
+	return dtos.SuccessS(*result, resp.RowsAffected), nil
 }
 
 func DbGetOneByID[T any](u *gorm.DB, ctx context.Context, id string, options *Opt) (dtos.GResp[T], error) {
 	return DbGetOne[T](u, ctx, models.Base{ID: id}, options)
-}
-
-func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[T], error) {
-	result := new(T)
-	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.BadReqM[T](err.Error()), err
-	}
-	query := u.WithContext(ctx).Clauses(clause.Returning{})
-	if options != nil {
-
-		if options.Debug {
-			query = query.Debug()
-		}
-		for _, pre := range options.Preloads {
-			query = query.Preload(pre)
-		}
-	}
-	resp := query.Model(&result).Create(&result)
-	if resp.Error != nil {
-		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
-	}
-	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
-}
-
-// DbUpsertOneAllFields Update all, on conflict of these columns
-func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, options *Opt) (dtos.GResp[T], error) {
-	result := new(T)
-	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.BadReqM[T](err.Error()), err
-	}
-	query := u.WithContext(ctx)
-	if options != nil {
-		//================.  Authorization Queries. ==========
-		if options.AuthKey != nil && options.AuthVal != nil {
-			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
-			query = query.Where(queryStr, options.AuthVal)
-		}
-		if options.Debug {
-			query = query.Debug()
-		}
-		for _, pre := range options.Preloads {
-			query = query.Preload(pre)
-		}
-	}
-	resp := query.Clauses(clause.OnConflict{
-		Columns:   cols,
-		UpdateAll: true,
-	}, clause.Returning{}).Model(&result).Create(&result)
-	if resp.Error != nil {
-		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
-	}
-	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
-}
-
-// DbUpsertOneListedFields Update listed fields(updateCols), on conflict of these columns
-func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, conflictingCols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
-	result := new(T)
-	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.BadReqM[T](err.Error()), err
-	}
-	query := u.WithContext(ctx)
-	if options != nil {
-		if options.Debug {
-			query = query.Debug()
-		}
-		for _, pre := range options.Preloads {
-			query = query.Preload(pre)
-		}
-		//================.  Authorization Queries. ==========
-		if options.AuthKey != nil && options.AuthVal != nil {
-			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
-			query = query.Where(queryStr, options.AuthVal)
-		}
-
-	}
-	resp := query.Clauses(clause.OnConflict{
-		Columns:   conflictingCols,
-		DoUpdates: clause.AssignmentColumns(updateCols),
-	}).Model(&result).Create(&result)
-	if resp.Error != nil {
-		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
-	}
-	return dtos.SuccessS[T](*result, resp.RowsAffected), nil
 }
 
 func DbCount[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[int64], error) {
@@ -314,6 +233,98 @@ func DbFetchWihtIn[T any](u *gorm.DB, ctx context.Context, inKey string, names [
 	return dtos.ReturnOffsetPaginatedS[[]T](dataList, count, true, resp.RowsAffected), nil
 }
 
+//------------------------------------------ Create Operations ----------------------------------------|
+//                                                                                                     |
+//-----------------------------------------------------------------------------------------------------|
+
+func DbCreateOne[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx).Clauses(clause.Returning{})
+	if options != nil {
+
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(*result, resp.RowsAffected), nil
+}
+
+func DbCreateOneT[T any](u *gorm.DB, ctx context.Context, value T, options *Opt) (dtos.GResp[T], error) {
+
+	query := u.WithContext(ctx).Clauses(clause.Returning{})
+	if options != nil {
+
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Model(&value).Create(&value)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(value, resp.RowsAffected), nil
+}
+func DbFirstOrCreate[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx).Clauses(clause.Returning{})
+	if options != nil {
+
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Model(&result).FirstOrCreate(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(*result, resp.RowsAffected), nil
+}
+
+func DbFirstOrCreateT[T any](u *gorm.DB, ctx context.Context, value T, options *Opt) (dtos.GResp[T], error) {
+
+	query := u.WithContext(ctx).Clauses(clause.Returning{})
+	if options != nil {
+
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Model(&value).FirstOrCreate(&value)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(value, resp.RowsAffected), nil
+}
+
+//------------------------------------------ Update Operations ----------------------------------------|
+//                                                                                                     |
+//-----------------------------------------------------------------------------------------------------|
+
+func DbUpdateOneById[T any](u *gorm.DB, ctx context.Context, id string, updateDto any, options *Opt) (dtos.GResp[T], error) {
+	return DbUpdateByFilter[T](u, ctx, models.Base{ID: id}, updateDto, options)
+}
 func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
 		return dtos.BadReqM[T](respC.EmptyFilter.Msg()), errors.New(respC.EmptyFilter.Msg())
@@ -341,13 +352,104 @@ func DbUpdateByFilter[T any](u *gorm.DB, ctx context.Context, filter, updateDto 
 	if resp.RowsAffected == 0 {
 		return dtos.NotModifiedErr[T](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
 	}
-	return dtos.SuccessCS[T](*result, respC.UpdateSuccess, resp.RowsAffected), nil
+	return dtos.SuccessCS(*result, respC.UpdateSuccess, resp.RowsAffected), nil
 }
 
-func DbUpdateOneById[T any](u *gorm.DB, ctx context.Context, id string, updateDto any, options *Opt) (dtos.GResp[T], error) {
-	//usr:=users
-	return DbUpdateByFilter[T](u, ctx, models.Base{ID: id}, updateDto, options)
+// DbUpsertOneAllFields Update all, on conflict of these columns, use DbUpsertOneListedFields for more control
+func DbUpsertOneAllFields[T any](u *gorm.DB, ctx context.Context, value any, cols []clause.Column, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx)
+	if options != nil {
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+	}
+	resp := query.Clauses(clause.OnConflict{
+		Columns:   cols,
+		UpdateAll: true,
+	}, clause.Returning{}).Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(*result, resp.RowsAffected), nil
 }
+
+// DbUpsertOneListedFields Update listed fields(updateCols), on conflict of these columns
+func DbUpsertOneListedFields[T any](u *gorm.DB, ctx context.Context, value any, conflictingCols []clause.Column, updateCols []string, options *Opt) (dtos.GResp[T], error) {
+	result := new(T)
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.BadReqM[T](err.Error()), err
+	}
+	query := u.WithContext(ctx)
+	if options != nil {
+		if options.Debug {
+			query = query.Debug()
+		}
+		for _, pre := range options.Preloads {
+			query = query.Preload(pre)
+		}
+		//================.  Authorization Queries. ==========
+		if options.AuthKey != nil && options.AuthVal != nil {
+			queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+			query = query.Where(queryStr, options.AuthVal)
+		}
+
+	}
+	resp := query.Clauses(clause.OnConflict{
+		Columns:   conflictingCols,
+		DoUpdates: clause.AssignmentColumns(updateCols),
+	}).Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(*result, resp.RowsAffected), nil
+}
+
+// DbUpsertManyWithValues this is same as DbUpsertOneListedFields but it gets the cols fromt the options
+// @Depricated use the top one, this is ambigious and top one is more clear
+func DbUpsertManyWithValues[T any](u *gorm.DB, ctx context.Context, value any, options Opt) (dtos.GResp[[]T], error) {
+	var result []T
+	if err := mapstructure.Decode(value, &result); err != nil {
+		return dtos.InternalErrMS[[]T](err.Error()), err
+	}
+
+	query := u.WithContext(ctx)
+	if options.Debug {
+		query = query.Debug()
+	}
+	//================.  Authorization Queries. ==========
+	if options.AuthKey != nil && options.AuthVal != nil {
+		queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
+		query = query.Where(queryStr, options.AuthVal)
+	}
+
+	for _, pre := range options.Preloads {
+		query = query.Preload(pre)
+	}
+	resp := query.Clauses(clause.OnConflict{
+		Columns:   options.Columns,
+		DoUpdates: clause.AssignmentColumns(options.UpdateColumns),
+	}, clause.Returning{}).Model(&result).Create(&result)
+	if resp.Error != nil {
+		return dtos.InternalErrMS[[]T](resp.Error.Error()), resp.Error
+	}
+	return dtos.SuccessS(result, resp.RowsAffected), nil
+}
+
+//------------------------------------------ Delete Operations ----------------------------------------|
+//                                                                                                     |
+//-----------------------------------------------------------------------------------------------------|
 
 func DbDeleteByFilter[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[T], error) {
 	if isEmptyStruct(filter) {
@@ -376,21 +478,22 @@ func DbDeleteByFilter[T any](u *gorm.DB, ctx context.Context, filter any, option
 		if errors.Is(resp.Error, gorm.ErrRecordNotFound) {
 			return dtos.NotFoundErrS[T](resp.Error.Error()), resp.Error
 		}
-		cmn.LogTrace("the error is", resp)
+		cmn.ErrorCtx(ctx, "Delete Error", resp, nil)
 		return dtos.NotFoundErrS[T](resp.Error.Error()), resp.Error
 	}
 	if resp.RowsAffected == 0 {
 		return dtos.NotModifiedErr[T]("NO records were deleted"), errors.New("NO records were deleted")
 	}
-	return dtos.SuccessCS[T](*result, respC.DeleteSuccess, resp.RowsAffected), nil
+	return dtos.SuccessCS(*result, respC.DeleteSuccess, resp.RowsAffected), nil
 
 }
 func DbDeleteOneById[T any](u *gorm.DB, ctx context.Context, id string, options *Opt) (dtos.GResp[T], error) {
 	return DbDeleteByFilter[T](u, ctx, models.Base{ID: id}, options)
 }
 
-//-===============================  Batch Operations ===================================
-//======================================================================================
+//-===============================  Batch Operations ===================================|
+//																	     				|
+//======================================================================================|
 
 func DbCreateMany[T any](u *gorm.DB, ctx context.Context, value any, options *Opt) (dtos.GResp[[]T], error) {
 	var result []T
@@ -446,7 +549,7 @@ func DbUpdateMany[T any](u *gorm.DB, ctx context.Context, filter, updateDto any,
 	if resp.RowsAffected == 0 {
 		return dtos.NotModifiedErr[int64](respC.NoRecordsUpdated.Msg()), errors.New(respC.NoRecordsUpdated.Msg())
 	}
-	return dtos.SuccessCS[int64](resp.RowsAffected, respC.UpdateSuccess, resp.RowsAffected), nil
+	return dtos.SuccessCS(resp.RowsAffected, respC.UpdateSuccess, resp.RowsAffected), nil
 }
 
 func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *Opt) (dtos.GResp[int64], error) {
@@ -481,37 +584,6 @@ func DbDeleteMany[T any](u *gorm.DB, ctx context.Context, filter any, options *O
 	if resp.RowsAffected == 0 {
 		return dtos.NotModifiedErr[int64]("NO records were deleted"), errors.New("NO records were deleted")
 	}
-	return dtos.SuccessCS[int64](resp.RowsAffected, respC.DeleteSuccess, resp.RowsAffected), nil
+	return dtos.SuccessCS(resp.RowsAffected, respC.DeleteSuccess, resp.RowsAffected), nil
 
-}
-
-//--------- New Methods
-
-func DbUpsertManyWithValues[T any](u *gorm.DB, ctx context.Context, value any, options Opt) (dtos.GResp[[]T], error) {
-	var result []T
-	if err := mapstructure.Decode(value, &result); err != nil {
-		return dtos.InternalErrMS[[]T](err.Error()), err
-	}
-
-	query := u.WithContext(ctx)
-	if options.Debug {
-		query = query.Debug()
-	}
-	//================.  Authorization Queries. ==========
-	if options.AuthKey != nil && options.AuthVal != nil {
-		queryStr := fmt.Sprintf("%s = ?", *options.AuthKey)
-		query = query.Where(queryStr, options.AuthVal)
-	}
-
-	for _, pre := range options.Preloads {
-		query = query.Preload(pre)
-	}
-	resp := query.Clauses(clause.OnConflict{
-		Columns:   options.Columns,
-		DoUpdates: clause.AssignmentColumns(options.UpdateColumns),
-	}, clause.Returning{}).Model(&result).Create(&result)
-	if resp.Error != nil {
-		return dtos.InternalErrMS[[]T](resp.Error.Error()), resp.Error
-	}
-	return dtos.SuccessS[[]T](result, resp.RowsAffected), nil
 }
