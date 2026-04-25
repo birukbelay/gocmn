@@ -23,11 +23,9 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCursorPaginated(ctx conte
 
 //=======================  Single Operations
 
-func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCreateOne(ctx context.Context, inputs *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
-	resp, err := DbCreateOne[T](uh.GormConn, ctx, inputs.Body, nil)
-	return dtos.HumaReturnG(resp, err)
-}
-func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneByFilter(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+//========== Fetch ops
+
+func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneByFilter(ctx context.Context, filter *F) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbGetOne[T](uh.GormConn, ctx, filter, nil)
 	return dtos.HumaReturnG(resp, err)
 }
@@ -42,6 +40,18 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthGetOneById(ctx context.Co
 	return dtos.HumaReturnG(resp, err)
 }
 
+func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCountRecords(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
+	resp, err := DbCount[T](uh.GormConn, ctx, filter, nil)
+	return dtos.HumaReturnG(resp, err)
+}
+
+//========== Non ops
+
+func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCreateOne(ctx context.Context, inputs *dtos.HumaReqBody[C]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
+	resp, err := DbCreateOne[T](uh.GormConn, ctx, inputs.Body, nil)
+	return dtos.HumaReturnG(resp, err)
+}
+
 func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthUpdateOneById(ctx context.Context, dto *dtos.HumaReqBodyId[U]) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbUpdateOneById[T](uh.GormConn, ctx, dto.ID, dto.Body, nil)
 	return dtos.HumaReturnG(resp, err)
@@ -49,11 +59,6 @@ func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthUpdateOneById(ctx context
 
 func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthDeleteOneByID(ctx context.Context, filter *dtos.HumaInputId) (*dtos.HumaResponse[dtos.GResp[T]], error) {
 	resp, err := DbDeleteOneById[T](uh.GormConn, ctx, filter.ID, nil)
-	return dtos.HumaReturnG(resp, err)
-}
-
-func (uh *IGenericAuthController[T, C, U, F, Q]) UnAuthCountRecords(ctx context.Context, filter F) (*dtos.HumaResponse[dtos.GResp[int64]], error) {
-	resp, err := DbCount[T](uh.GormConn, ctx, filter, nil)
 	return dtos.HumaReturnG(resp, err)
 }
 

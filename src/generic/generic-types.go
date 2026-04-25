@@ -66,7 +66,6 @@ func isEmptyStruct(s interface{}) bool {
 }
 
 type Queryable[F any] interface {
-	// GetQueries() (string, []string)
 	GetFilter() (f F, pagi dtos.PaginationInput, opt *Opt)
 }
 type Filterable interface {
@@ -74,4 +73,11 @@ type Filterable interface {
 }
 type Settable interface {
 	SetOnCreate(key string)
+}
+type KeyVal struct {
+	Key string
+	Val string
+}
+type Gettable[F any] interface {
+	GetFilter() (keyVal KeyVal, f F, opt *Opt)
 }
